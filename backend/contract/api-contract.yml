@@ -1,0 +1,212 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: OLA ASR Backend -API Contract
+  description: A python based microservice for OLA ASR backend management. This service will expose REST APIs to maintain ASR related functionalities.
+  contact:
+    name: Aswin Pradeep
+    email: aswin.pradeep@tarento.com
+servers:
+  - url: /asr/api
+paths:
+  /v1/generate_sentence:
+    post:
+      tags:
+        - Generate a sentence
+      summary: REST API to generate a sentence from pre defined benchmark dataset, stored as json file.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SentenceRequest'
+        required: true
+      responses:
+        '200':
+          description: Request Successfull.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SentenceStatus'
+        '400':
+          description: On input errors causing failure.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: On system level errors causing failure.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /v1/submit_feedback:
+    post:
+      tags:
+        - Submit a rating
+      summary: REST API to submit the rating for a speech recognition model
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+        required: true
+      responses:
+        '200':
+          description: User has verified successfully.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Status'
+        '400':
+          description: On input errors causing failure in user verification.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: On system level errors causing failure in user verification.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+                
+  /v1/export_results:
+    post:
+      tags:
+        - save model predictions
+      summary: save multiple model predictions for the same text.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/exportRequest'
+        required: true
+      responses:
+        '200':
+          description: apiKey search is successful.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Status'
+        '400':
+          description: On input errors causing failure in auth token search.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: On system level errors causing failure in auth token search.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+components:
+  schemas:
+    SentenceRequest:
+      type: object
+      
+      required:
+        - language
+      properties:
+        language:
+          type: string
+          enum: [hi, en]
+          description: two letter language code
+      
+   
+    
+    FeedbackRequest:
+      type: object
+      required:
+        - feedbackScore
+        - sessionID
+        - modelID
+      properties:
+        feedbackScore:
+          type: integer
+          description: value of submitted rating.
+        sessionID:
+          type: string
+          description: unique sessionid value.
+        modelID:
+          type: string
+          description: unique modelid value.
+          
+    exportRequest:
+      type: object
+      required:
+        - feedbackScore
+        - sessionID
+        - modelID
+        - audioUri
+        - predictedText
+        - inputText
+        - wer
+        - cer
+      properties:
+        feedbackScore:
+          type: integer
+          description: value of submitted rating.
+        sessionID:
+          type: string
+          description: unique sessionid value.
+        modelID:
+          type: string
+          description: unique modelid value.
+        audioUri:
+          type: string
+          description: uri of saved audio file.
+        predictedText:
+          type: string
+          description: predicted text from model output.
+        inputText:
+          type: string
+          description: real string from benchmark dataset which user reads out
+        wer:
+          type: number
+          description: wer score calculated from predicted and real sentence
+        cer:
+          type: number
+          description: cer score calculated from predicted and real sentence
+      
+    SentenceStatus:
+      type: object
+      properties:
+        generated_text:
+          type: string
+          description: message returned after succesful request completion.
+          example : "This is a random generated sentence"
+
+          
+
+          
+    Status:
+      type: object
+      properties:
+        message:
+          type: string
+          description: message returned after succesful request completion.
+        data:
+          type: object
+          description: data returned by the request.
+
+          
+    Error:
+      type: object
+      properties:
+        errorID:
+          type: string
+          description: Unique UUID for the error.
+        code:
+          type: string
+          description: Unique code signifying the category for the error.
+        message:
+          type: string
+          description: User readable message pertaining to the error
+        timeStamp:
+          type: number
+          description: 13 digit epoch timestamp
+    
