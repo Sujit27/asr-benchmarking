@@ -53,19 +53,19 @@ paths:
         required: true
       responses:
         '200':
-          description: User has verified successfully.
+          description: Request Successfull.
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Status'
         '400':
-          description: On input errors causing failure in user verification.
+          description: On input errors causing failure.
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: On system level errors causing failure in user verification.
+          description: On system level errors causing failure.
           content:
             '*/*':
               schema:
@@ -85,19 +85,19 @@ paths:
         required: true
       responses:
         '200':
-          description: apiKey search is successful.
+          description: Request Successfull.
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Status'
         '400':
-          description: On input errors causing failure in auth token search.
+          description: On input errors causing failure.
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: On system level errors causing failure in auth token search.
+          description: On system level errors causing failure.
           content:
             '*/*':
               schema:
