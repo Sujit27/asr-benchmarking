@@ -1,0 +1,22 @@
+{
+    "models": [
+      {
+        "language_code": "en",
+        "model_id": 1,
+        "model_type": "vakyansh",
+        "is_active": true
+      },
+      {
+        "language_code": "hi",
+        "model_id": 2,
+        "model_type": "vakyansh",
+        "is_active": true  
+      },
+      {
+        "language_code": "kn",
+        "model_id": 3,
+        "model_type": "vakyansh",
+        "is_active": true  
+      }  
+    ]
+}
