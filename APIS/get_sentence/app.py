@@ -9,7 +9,7 @@ app = Flask(__name__)
 def generate_text():
 
     body = request.get_json()
-    file_name= "text_corpus/example.json"
+    file_name= "../../text_corpus/example.json"
     language = body["language"]
     result =get_random_text.get_text(file_name,language)
     if(result):
