@@ -5,11 +5,14 @@ from bson import json_util
 import get_random_text
 import flask
 import config
-
+from flask_cors import CORS, cross_origin
 
 
 
 app = flask.Flask(__name__)
+CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 uri_=config.MONGO_DB_SERVER_ADDRESS+config.db_name
 mongodb_client = PyMongo(app, uri=uri_) 
 db = mongodb_client.db
