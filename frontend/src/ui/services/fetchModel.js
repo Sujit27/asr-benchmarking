@@ -3,11 +3,12 @@ import API from "./api";
 import ENDPOINTS from "./apiendpoints";
 
 export default class FetchModel extends API {
-  constructor(timeout = 200000) {
-    super("GET", timeout, false);
-    this.type = 'FETCH_MODEL';
+  constructor(language = 'en', type = 'model', timeout = 200000) {
+    super("POST", timeout, false);
+    // this.type = 'FETCH_MODEL';
     this.fetch_model = null;
-    this.endpoint = `${super.apiEndPoint()}${ENDPOINTS.fetchmodel}`;
+    this.lang = language;
+    this.endpoint = type === 'model' ? `${super.apiEndPoint()}${ENDPOINTS.fetchmodel}` : `${super.apiEndPoint()}${ENDPOINTS.fetchsentence}` ;
   }
 
   toString() {
@@ -24,14 +25,16 @@ export default class FetchModel extends API {
   }
 
   getBody() {
-    return {};
+    return {
+        language : this.lang
+    };
   }
 
   getHeaders() {
     return {
       headers: {
         "Content-Type": "application/json",
-         'auth-token': `${decodeURI(localStorage.getItem("token"))}`
+        //  'auth-token': `${decodeURI(localStorage.getItem("token"))}`
       }
     };
   }
