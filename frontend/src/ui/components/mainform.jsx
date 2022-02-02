@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { v1 as uuidv1 } from 'uuid';
 import { Component } from 'react';
 import Box from '@material-ui/core/Box';
 import TextField from '@material-ui/core/TextField';
@@ -14,7 +15,8 @@ import StarBorderIcon from '@material-ui/icons/StarBorder';
 import startAudio from '../../assets/mic.png';
 import stopAudio from '../../assets/stop.png';
 import FetchModel from '../services/fetchModel';
-import APITransport from '../services/apitransport';
+import SubmitFeedback from '../services/submitfeedback';
+import ExportResults from '../services/exportresults';
 
 const languages = [
     {
@@ -36,12 +38,20 @@ class Mainform extends Component {
         super(props);
         this.state = {
             lang: 'en',
+            rating: 1,
             micOn: true,
             setModel: '',
+            modelID: '',
             setSentence: '',
+            sessionID: uuidv1(),
+            audioUri: '',
+            predictedText: '',
+            wer: '',
+            cer: '',
         }
     }
 
+    // for language selection
     handleChange = (event) => {
         this.setState({ lang: event.target.value })
         this.getModel(event.target.value, 'model')
@@ -50,14 +60,14 @@ class Mainform extends Component {
 
     getModel = (lan, type) => {
         const apiObj = new FetchModel(lan, type);
-        // APITransport(apiObj);
         fetch(apiObj.apiEndPoint(), { method: 'POST', headers: apiObj.getHeaders().headers, body: JSON.stringify(apiObj.getBody()) })
             .then(async res => {
                 const resData = await res.json()
                 if (type === 'model') {
                     this.setState({ setModel: resData})
+                    this.setState({ modelID: resData.model_ids[0] })
                 } else {
-                    this.setState({ setSentence: resData})
+                    this.setState({ setSentence: resData.generated_text})
                 }
                 console.log('resData', resData)
             })
@@ -66,7 +76,41 @@ class Mainform extends Component {
             })
     }
 
+    // for feedback ratings
+    handleRating = (event) => {
+        this.setState({ rating: event.target.value })
+        this.updateFeedback(event.target.value, this.state.sessionID, this.state.modelID)
+    }
 
+    updateFeedback = (value, sessionID, modelID) => {
+        const apiObj = new SubmitFeedback(value, sessionID, modelID);
+        fetch(apiObj.apiEndPoint(), { method: 'POST', headers: apiObj.getHeaders().headers, body: JSON.stringify(apiObj.getBody()) })
+            .then(async res => {
+                const resData = await res.json()
+                console.log('resData', resData)
+            })
+            .catch(error => {
+                console.log('error', error)
+            })
+    }
+
+    // on form submit
+    handleSubmit = (event) => {
+        console.log('form submit', event.target.value)
+        this.submitForm(event.target.value);
+    }
+
+    submitForm = (value) => {
+        const apiObj = new ExportResults(value, this.state.sessionID, this.state.modelID, this.state.audioUri, this.state.predictedText, this.state.setSentence, this.state.wer, this.state.cer);
+        fetch(apiObj.apiEndPoint(), { method: 'POST', headers: apiObj.getHeaders().headers, body: JSON.stringify(apiObj.getBody()) })
+            .then(async res => {
+                const resData = await res.json()
+                console.log('resData', resData)
+            })
+            .catch(error => {
+                console.log('error', error)
+            })
+    }
 
     render() {
         const onMicClick = (event) => {
@@ -82,7 +126,7 @@ class Mainform extends Component {
             <Grid item xs={12} sm={12} lg={12} xl={12}>
 
                 <Box
-                    component="form"
+                    component="form" onSubmit={this.handleSubmit}
                     sx={{
                         display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1px solid #cccc',
                         padding: '3% 0', margin: '3%', '& .MuiTextField-root': { m: 1, width: '25ch' },
@@ -106,7 +150,8 @@ class Mainform extends Component {
                             ))}
                         </TextField>
 
-                        <TextareaAutosize aria-label="minimum height" minRows={3} placeholder="Read text here" style={{ width: '90%' }} />
+                        <TextareaAutosize aria-label="minimum height" minRows={3} placeholder="Read text here" style={{ width: '90%' }} 
+                        value={this.state.setSentence} />
                     </div>
                     <div style={{
                         marginTop: '1.5%', marginBottom: '1%', display: 'flex', width: '32rem', alignItems: 'center', justifyContent: 'center',
@@ -126,7 +171,7 @@ class Mainform extends Component {
                     <div style={{ marginTop: '1%', marginBottom: '1%', display: 'flex', width: '32rem', alignItems: 'center', justifyContent: 'center' }}>
                         <Typography fontSize="fontSize" style={{ marginRight: '4%', marginTop: '1%' }}>Provide your feedback</Typography>
                         <Rating name="customized-empty" defaultValue={1} size="large" emptyIcon={<StarBorderIcon fontSize="inherit" />}
-                            style={{ fontSize: '2rem' }} />
+                            style={{ fontSize: '2rem' }} onChange={this.handleRating} />
                     </div>
 
                     <div style={{ marginTop: '1%', marginBottom: '1%', display: 'flex', width: '32rem', alignItems: 'center', justifyContent: 'center' }}>
@@ -134,7 +179,7 @@ class Mainform extends Component {
                             width: "150px", backgroundColor: '#1C9AB7', borderRadius: "5px 5px 5px 5px",
                             color: "#FFFFFF", height: '46px', marginRight: '5%'
                         }}> Record again</Button>
-                        <Button id="back" variant="contained" color="primary" size="small" style={{
+                        <Button id="back" variant="contained" color="primary" size="small" type="submit" style={{
                             width: "135px", backgroundColor: '#1C9AB7', borderRadius: "5px 5px 5px 5px",
                             color: "#FFFFFF", height: '46px'
                         }}> Thank you</Button>
