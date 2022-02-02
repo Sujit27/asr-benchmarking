@@ -19,6 +19,7 @@ db = mongodb_client.db
 
 
 @app.route('/get_sentence',methods = ['POST'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def get_sentence():
 
     body = request.get_json()
@@ -34,6 +35,7 @@ def get_sentence():
 
 
 @app.route("/submit_feedback",methods = ['POST'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def submit_feedback():
     body = request.get_json()
     record = { "feedbackScore": body["feedbackScore"] , "sessionID" :body["sessionID"] ,"modelID" : body["modelID"] }
@@ -44,6 +46,7 @@ def submit_feedback():
     return flask.jsonify(json.loads(json_util.dumps(dict_)))
 
 @app.route("/show_all_feedbacks",methods=['GET'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def show_all_feedbacks():
     all_records = db.feedback_collection.find()   # here feedback_collection is the collection name which is located inside  specified  database 
 
@@ -53,6 +56,7 @@ def show_all_feedbacks():
 
 
 @app.route("/export_results",methods=['POST'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def export_results():
     body = request.get_json()
     record = { "feedbackScore": body["feedbackScore"] , "sessionID" :body["sessionID"] ,"modelID" : body["modelID"] ,"audioUri":body["audioUri"],"predictedText":body["predictedText"],"inputText":body["inputText"],"wer":body["wer"],"cer":body["cer"]}
@@ -63,6 +67,7 @@ def export_results():
     return flask.jsonify(json.loads(json_util.dumps(dict_)))
 
 @app.route("/show_all_exported_results",methods=['GET'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def show_all_exported_results():
     all_records = db.save_model_predictions.find()  # here save model predictions is the collection name which is located inside  specified  database 
 
@@ -71,6 +76,7 @@ def show_all_exported_results():
 
 
 @app.route("/get_model_ids",methods=['POST'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def get_model_ids():
 
     body = request.get_json()
