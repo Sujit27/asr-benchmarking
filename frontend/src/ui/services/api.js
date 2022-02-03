@@ -12,7 +12,7 @@ export default class API {
     this.method = method;
     this.timeout = timeout;
     this.auth = auth;
-    this.baseUrl = CONFIGS.BASE_URL;
+    this.baseUrl = CONFIGS.BASE_URL_5001;
   }
 
   toString() {

@@ -13,7 +13,7 @@ export default class ExportResults extends API {
     this.wer = wer;
     this.cer = cer;
     this.fetch_model = null;
-    this.endpoint = `${super.apiEndPoint()}${ENDPOINTS.submitfeedback}`;
+    this.endpoint = `${super.apiEndPoint()}${ENDPOINTS.export_results}`;
   }
 
   toString() {
