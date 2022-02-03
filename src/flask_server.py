@@ -6,6 +6,7 @@ import get_random_text
 import flask
 import config
 from flask_cors import CORS, cross_origin
+import get_scores
 
 
 
@@ -92,8 +93,28 @@ def get_model_ids():
     return flask.jsonify({"model_ids":model_ids})
 
 
+@app.route("/get_cer_score",methods=['POST'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
+def get_cer_score():
+
+    body = request.get_json()
+    predicted = body["predicted_text"]
+    reference = body["true_text"]
+    score=get_scores.get_cer(predicted ,reference )
+
+    return flask.jsonify({"cer_score":score})
 
 
+@app.route("/get_wer_score",methods=['POST'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
+def get_wer_score():
+
+    body = request.get_json()
+    predicted = body["predicted_text"]
+    reference = body["true_text"]
+    score=get_scores.get_wer(predicted ,reference )
+
+    return flask.jsonify({"wer_score":score})
 
 if __name__ == '__main__':
     app.run(host =config.HOST, port=config.PORT, debug=True)
