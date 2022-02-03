@@ -211,11 +211,13 @@ class Mainform extends Component {
   };
 
   onMicClick = (event) => {
-    this.setState({
-      micOn: false,
-      recordAudio: RecordState.START,
-      audioUri: "",
-    });
+    if (this.state.setSentence) {
+      this.setState({
+        micOn: false,
+        recordAudio: RecordState.START,
+        audioUri: "",
+      });
+    }
   };
   onStopClick = (event) => {
     this.setState({
