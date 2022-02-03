@@ -1,12 +1,14 @@
 import API from "./api";
 import ENDPOINTS from "./apiendpoints";
 
-export default class FetchModel extends API {
-  constructor(language = 'en', type = 'model', timeout = 200000) {
+export default class SubmitFeedback extends API {
+  constructor(value, sessionID, modelID, timeout = 200000) {
     super("POST", timeout, false);
+    this.score = value;
+    this.sessionId = sessionID;
+    this.modelId = modelID;
     this.fetch_model = null;
-    this.lang = language;
-    this.endpoint = type === 'model' ? `${super.apiEndPoint()}${ENDPOINTS.fetchmodel}` : `${super.apiEndPoint()}${ENDPOINTS.fetchsentence}` ;
+    this.endpoint = `${super.apiEndPoint()}${ENDPOINTS.submitfeedback}`;
   }
 
   toString() {
@@ -24,7 +26,9 @@ export default class FetchModel extends API {
 
   getBody() {
     return {
-        language : this.lang
+        feedbackScore: this.score,
+        sessionID: this.sessionId,
+        modelID: this.modelId,
     };
   }
 
