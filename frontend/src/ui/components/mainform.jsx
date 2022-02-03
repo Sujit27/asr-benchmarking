@@ -51,6 +51,7 @@ class Mainform extends Component {
       recordAudio: "",
       base: "",
       loading: false,
+      show: false,
     };
   }
 
@@ -70,6 +71,7 @@ class Mainform extends Component {
         cer: "",
         recordAudio: "",
         base: "",
+        show: false,
       },
       () => {
         this.getModel("en", "model");
@@ -200,9 +202,8 @@ class Mainform extends Component {
       const result = await fetchObj.json();
       this.setState({ predictedText: result.transcript });
     } else {
-      console.log("failed");
     }
-    this.setState({ loading: false });
+    this.setState({ loading: false, show: true });
   };
 
   onStopRecording = (data) => {
@@ -233,7 +234,7 @@ class Mainform extends Component {
           <></>
         )}
         <Box
-          component="form"  
+          component="form"
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -367,7 +368,7 @@ class Mainform extends Component {
             />
           </div>
 
-          {this.state.predictedText ? (
+          {this.state.show ? (
             <>
               <div
                 style={{
