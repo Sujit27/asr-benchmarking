@@ -7,7 +7,6 @@ import MenuItem from "@material-ui/core/MenuItem";
 import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 import { Typography } from "@material-ui/core";
 import { Rating } from "@material-ui/lab";
-import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import StarBorderIcon from "@material-ui/icons/StarBorder";
 import startAudio from "../../assets/start.svg";
@@ -18,6 +17,8 @@ import ExportResults from "../services/exportresults";
 import AudioReactRecorder, { RecordState } from "audio-react-recorder";
 import GetTranscription from "../services/getTranscription";
 import CircularProgress from "./ProgressBar";
+import WerCerScore  from "../services/werCerScore";
+
 const languages = [
   {
     value: "en",
@@ -155,7 +156,37 @@ class Mainform extends Component {
   //     this.submitForm(event.target.value);
   //   };
 
-  submitForm = (value) => {
+  getWerScrore = async () => {
+    const obj = new WerCerScore(this.state.predictedText, this.state.setSentence, 'wer');
+    const fetchObj = await fetch(obj.apiEndPoint(), {
+      method: "post",
+      headers: obj.getHeaders().headers,
+      body: JSON.stringify(obj.getBody()),
+    });
+    if (fetchObj.ok) {
+      const result = await fetchObj.json();
+      console.log('result', result)      
+      this.setState({ loading: true, wer: result.wer_score });
+      this.getCerScrore()
+    }
+  }
+
+  getCerScrore = async () => {
+    const obj = new WerCerScore(this.state.predictedText, this.state.setSentence, 'cer');
+    const fetchObj = await fetch(obj.apiEndPoint(), {
+      method: "post",
+      headers: obj.getHeaders().headers,
+      body: JSON.stringify(obj.getBody()),
+    });
+    if (fetchObj.ok) {
+      const result = await fetchObj.json();
+      console.log('result', result)      
+      this.setState({ loading: true, cer: result.cer_score });
+      this.submitForm()
+    }
+  }
+
+  submitForm = () => {
     const apiObj = new ExportResults(
       this.state.rating,
       this.state.sessionID,
@@ -174,6 +205,7 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         console.log("resData", resData);
+        this.setState({ loading: false });
       })
       .catch((error) => {
         console.log("error", error);
@@ -431,7 +463,7 @@ class Mainform extends Component {
                   variant="contained"
                   color="primary"
                   size="small"
-                  onClick={this.submitForm}
+                  onClick={this.getWerScrore}
                   style={{
                     width: "135px",
                     backgroundColor: "#1C9AB7",

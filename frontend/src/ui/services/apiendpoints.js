@@ -4,6 +4,8 @@ const endpoints = {
   submitfeedback: "submit_feedback",
   export_results: "export_results",
   get_transcription: "get_transcription",
+  get_wer_score: 'get_wer_score',
+  get_cer_score: 'get_cer_score',
 };
 
 export default endpoints;
