@@ -60,7 +60,7 @@ class Mainform extends Component {
     this.setState(
       {
         lang: "en",
-        rating: 1,
+        rating: 0,
         micOn: true,
         setModel: "",
         modelID: "",
@@ -88,6 +88,10 @@ class Mainform extends Component {
       audioUri: "",
       base: "",
       recordAudio: "",
+      predictedText: "",
+      modelID: "",
+      micOn: true,
+      rating: 0,
     });
     this.getModel(event.target.value, "model");
     this.getModel(event.target.value, "sentence");
@@ -117,7 +121,6 @@ class Mainform extends Component {
             loading: false,
           });
         }
-        console.log("resData", resData);
       })
       .catch((error) => {
         console.log("error", error);
@@ -143,7 +146,6 @@ class Mainform extends Component {
     })
       .then(async (res) => {
         const resData = await res.json();
-        console.log("resData", resData);
       })
       .catch((error) => {
         console.log("error", error);
@@ -165,7 +167,6 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      console.log('result', result)      
       this.setState({ loading: true, wer: result.wer_score });
       this.getCerScrore()
     }
@@ -180,7 +181,6 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      console.log('result', result)      
       this.setState({ loading: true, cer: result.cer_score });
       this.submitForm()
     }
@@ -204,7 +204,6 @@ class Mainform extends Component {
     })
       .then(async (res) => {
         const resData = await res.json();
-        console.log("resData", resData);
         this.setState({ loading: false });
       })
       .catch((error) => {
