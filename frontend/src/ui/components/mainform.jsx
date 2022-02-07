@@ -12,7 +12,7 @@ import StarBorderIcon from "@material-ui/icons/StarBorder";
 import startAudio from "../../assets/start.svg";
 import stopAudio from "../../assets/stop.svg";
 import FetchModel from "../services/fetchModel";
-// import FetchSentence from "../services/fecthSentence";
+import FetchSentence from "../services/fecthSentence";
 import SubmitFeedback from "../services/submitfeedback";
 import ExportResults from "../services/exportresults";
 import AudioReactRecorder, { RecordState } from "audio-react-recorder";
@@ -78,7 +78,7 @@ class Mainform extends Component {
       },
       () => {
         this.getModel("en", "model");
-        this.getModel("en", "sentence");
+        // this.getModel("en", "sentence");
       }
     );
   };
@@ -95,13 +95,13 @@ class Mainform extends Component {
       rating: 0,
     });
     this.getModel(event.target.value, "model");
-    this.getModel(event.target.value, "sentence");
+    // this.getModel(event.target.value, "sentence");
   };
 
   componentDidMount() {
     this.setState({ loading: true });
     this.getModel("en", "model");
-    this.getModel("en", "sentence");
+    // this.getModel("en", "sentence");
   }
 
   getModel = (lan, type) => {
@@ -114,14 +114,37 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         if (type === "model") {
-          this.setState({ setModel: resData });
-          this.setState({ modelID: resData.model_ids[0], loading: false });
+          this.setState({ setModel: resData, modelID: resData.model_ids[0], loading: false, setSentence: '' });
         } else {
           this.setState({
             setSentence: resData.generated_text,
             loading: false,
           });
         }
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  };
+
+  getSentence = () => {
+    const apiObj = new FetchSentence(this.state.lang);
+    fetch(apiObj.apiEndPoint(), {
+      method: "POST",
+      headers: apiObj.getHeaders().headers,
+      body: JSON.stringify(apiObj.getBody()),
+    })
+      .then(async (res) => {
+        const resData = await res.json();
+        console.log("resData ======", resData);
+        this.setState({
+            rating: 0,
+            setSentence: resData.generated_text,
+            loading: false,
+            sessionID: uuidv1(),
+            audioUri: '',
+            predictedText: '',
+        });
       })
       .catch((error) => {
         console.log("error", error);
@@ -263,7 +286,7 @@ class Mainform extends Component {
 
   render() {
     return (
-      <>
+        <div>
         {this.state.loading ? (
           <CircularProgress token={true} val={1000} eta={2000 * 1000} />
         ) : (
@@ -275,217 +298,230 @@ class Mainform extends Component {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            border: "1px solid #cccc",
-            padding: "3% 0",
-            margin: "3%",
+            border: "2px solid #999",
+            padding: "2% 0", borderRadius: '6px',
+            margin: "3% auto", width: '60%',
             "& .MuiTextField-root": { m: 1, width: "25ch" },
           }}
           noValidate
           autoComplete="off"
         >
-          <Typography value="" variant="h4">
-            Speech Model Recognition
-          </Typography>
+            <Typography value="" variant="h4">
+                Speech Model Recognition
+            </Typography>
 
-          <div
-            style={{
-              marginTop: "4%",
-              marginBottom: "1%",
-              display: "flex",
-              width: "32rem",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <TextField
-              id="outlined-select-currency"
-              select
-              style={{ width: "20ch", marginRight: "10%" }}
-              value={this.state.lang}
-              label="Select Language"
-              onChange={this.handleChange}
+            <div style={{
+                marginTop: "4%",
+                marginBottom: "1%",
+                display: "flex",
+                width: "34rem",
+                alignItems: "center",
+                justifyContent: "center",
+                }}
             >
-              {languages.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
+                <TextField
+                id="outlined-select-currency"
+                select
+                style={{ width: "22ch", marginRight: "22%", fontSize:'1.2em' }}
+                value={this.state.lang}
+                label="Select Language"
+                onChange={this.handleChange}
+                >
+                {languages.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                    </MenuItem>
+                ))}
+                </TextField>
 
-            <TextareaAutosize
-              aria-label="minimum height"
-              minRows={5}
-              placeholder="Loading text...."
-              style={{ width: "90%" }}
-              value={this.state.setSentence}
-              disabled
-            />
-          </div>
-          <div
-            style={{
-              marginTop: "1.5%",
-              marginBottom: "1%",
-              display: "flex",
-              width: "32rem",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "1px solid #ccc",
-              flexDirection: "column",
-              padding: "1.5% 0 2%",
-            }}
-          >
-            <>
-              <div style={{ marginBottom: "2%" }}>
-                {this.state.micOn && (
-                  <img
-                    src={startAudio}
-                    id="mic_image"
-                    onClick={this.onMicClick}
-                    alt="MIC"
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      marginBottom: "2%",
-                    }}
-                  />
-                )}
-              </div>
-              <div style={{ display: "none" }}>
-                <AudioReactRecorder
-                  state={this.state.recordAudio}
-                  onStop={this.onStopRecording}
-                  style={{ display: "none" }}
+                <Button color="primary" variant="contained" onClick={this.getSentence} style={{fontSize: '1.1em', backgroundColor: '#2591e6', width: '40%', textTransform: 'capitalize'}}>
+                    Get Sentence
+                </Button>
+            </div>
+            <div style={{
+                marginTop: "2%",
+                marginBottom: "1%",
+                display: "flex",
+                width: "34rem",
+                alignItems: "center",
+                justifyContent: "center",
+                }}
+            >
+                <TextareaAutosize
+                aria-label="minimum height"
+                minRows={5}
+                placeholder="Loading text...."
+                style={{ width: "100%", fontFamily: 'Arial', fontSize: '1em'}}
+                value={this.state.setSentence}
+                disabled
                 />
-              </div>
-              <div style={{ marginBottom: "2%" }}>
+            </div>
+            <div
+                style={{
+                marginTop: "1.5%",
+                marginBottom: "1%",
+                display: "flex",
+                width: "34rem",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "1px solid #ccc",
+                flexDirection: "column",
+                padding: "1.5% 0 2%",
+                }}
+            >
+                <>
+                <div style={{ marginBottom: "2%" }}>
+                    {this.state.micOn && (
+                    <img
+                        src={startAudio}
+                        id="mic_image"
+                        onClick={this.onMicClick}
+                        alt="MIC"
+                        style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        marginBottom: "2%",
+                        cursor: 'pointer',
+                        }}
+                    />
+                    )}
+                </div>
+                <div style={{ display: "none" }}>
+                    <AudioReactRecorder
+                    state={this.state.recordAudio}
+                    onStop={this.onStopRecording}
+                    style={{ display: "none" }}
+                    />
+                </div>
+                <div style={{ marginBottom: "2%" }}>
+                    {!this.state.micOn && (
+                    <img
+                        src={stopAudio}
+                        id="mic_image"
+                        onClick={this.onStopClick}
+                        alt="STOP"
+                        style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        }}
+                    />
+                    )}
+                </div>
+
                 {!this.state.micOn && (
-                  <img
-                    src={stopAudio}
-                    id="mic_image"
-                    onClick={this.onStopClick}
-                    alt="STOP"
+                    <Typography
+                    variant="body"
                     style={{
-                      display: "flex",
-                      justifyContent: "center",
+                        textAlign: "center",
+                        display: "flex",
+                        justifyContent: "center",
+                        marginBottom: "2%",
                     }}
-                  />
+                    >
+                    Start Speaking...
+                    </Typography>
                 )}
-              </div>
-
-              {!this.state.micOn && (
-                <Typography
-                  variant="body"
-                  style={{
-                    textAlign: "center",
-                    display: "flex",
-                    justifyContent: "center",
-                    marginBottom: "2%",
-                  }}
-                >
-                  Start Speaking...
-                </Typography>
-              )}
-            </>
-            {this.state.audioUri ? (
-              <audio
-                controls
-                src={this.state.audioUri}
-                style={{ marginBottom: "2%" }}
-              ></audio>
-            ) : (
-              <></>
-            )}
-            <TextareaAutosize
-              aria-label="minimum height"
-              minRows={5}
-              value={this.state.predictedText}
-              placeholder="Transcribed text here"
-              style={{ width: "95%" }}
-              disabled
-            />
-          </div>
-
-          {this.state.show ? (
-            <>
-              <div
-                style={{
-                  marginTop: "1%",
-                  marginBottom: "1%",
-                  display: "flex",
-                  width: "32rem",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Typography
-                  fontSize="fontSize"
-                  style={{ marginRight: "4%", marginTop: "1%" }}
-                >
-                  Provide your feedback
-                </Typography>
-                <Rating
-                  name="customized-empty"
-                  defaultValue={0}
-                  size="large"
-                  emptyIcon={<StarBorderIcon fontSize="inherit" />}
-                  style={{ fontSize: "2rem" }}
-                  onChange={this.handleRating}
-                  disabled={this.state.rating > 0} 
+                </>
+                {this.state.audioUri ? (
+                <audio
+                    controls
+                    src={this.state.audioUri}
+                    style={{ marginBottom: "2%" }}
+                ></audio>
+                ) : (
+                <></>
+                )}
+                <TextareaAutosize
+                aria-label="minimum height"
+                minRows={5}
+                value={this.state.predictedText}
+                placeholder="Transcribed text here"
+                style={{ width: "95%", fontFamily: 'Arial', fontSize: '1em' }}
+                disabled
                 />
-              </div>
+            </div>
 
-              {/* <div
-                style={{
-                  marginTop: "1%",
-                  marginBottom: "1%",
-                  display: "flex",
-                  width: "32rem",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Button
-                  id="back"
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  style={{
-                    width: "150px",
-                    backgroundColor: "#1C9AB7",
-                    borderRadius: "5px 5px 5px 5px",
-                    color: "#FFFFFF",
-                    height: "46px",
-                    marginRight: "5%",
-                  }}
-                  onClick={this.clearState}
+            {this.state.show ? (
+                <>
+                <div
+                    style={{
+                    marginTop: "1%",
+                    marginBottom: "1%",
+                    display: "flex",
+                    width: "34rem",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    }}
                 >
-                  {" "}
-                  Record again
-                </Button>
-                <Button
-                  id="back"
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  onClick={this.getWerScrore}
-                  style={{
-                    width: "135px",
-                    backgroundColor: "#1C9AB7",
-                    borderRadius: "5px 5px 5px 5px",
-                    color: "#FFFFFF",
-                    height: "46px",
-                  }}
+                    <Typography
+                    fontSize="fontSize"
+                    style={{ marginRight: "4%", marginTop: "1%", fontSize: '1.2em'}}
+                    >
+                    Provide your feedback
+                    </Typography>
+                    <Rating
+                    name="customized-empty"
+                    defaultValue={0}
+                    size="large"
+                    emptyIcon={<StarBorderIcon fontSize="inherit" />}
+                    style={{ fontSize: "2rem" }}
+                    onChange={this.handleRating}
+                    disabled={this.state.rating > 0} 
+                    />
+                </div>
+
+                {/* <div
+                    style={{
+                    marginTop: "1%",
+                    marginBottom: "1%",
+                    display: "flex",
+                    width: "32rem",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    }}
                 >
-                  {" "}
-                  Thank you
-                </Button>
-              </div> */}
-            </>
-          ) : (
-            <></>
-          )}
+                    <Button
+                    id="back"
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    style={{
+                        width: "150px",
+                        backgroundColor: "#1C9AB7",
+                        borderRadius: "5px 5px 5px 5px",
+                        color: "#FFFFFF",
+                        height: "46px",
+                        marginRight: "5%",
+                    }}
+                    onClick={this.clearState}
+                    >
+                    {" "}
+                    Record again
+                    </Button>
+                    <Button
+                    id="back"
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    onClick={this.getWerScrore}
+                    style={{
+                        width: "135px",
+                        backgroundColor: "#1C9AB7",
+                        borderRadius: "5px 5px 5px 5px",
+                        color: "#FFFFFF",
+                        height: "46px",
+                    }}
+                    >
+                    {" "}
+                    Thank you
+                    </Button>
+                </div> */}
+                </>
+            ) : (
+                <></>
+            )}
         </Box>
-      </>
+      </div>
     );
   }
 }
