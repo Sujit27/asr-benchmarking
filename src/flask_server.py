@@ -60,7 +60,7 @@ def show_all_feedbacks():
 @cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def export_results():
     body = request.get_json()
-    record = { "feedbackScore": body["feedbackScore"] , "sessionID" :body["sessionID"] ,"modelID" : body["modelID"] ,"audioUri":body["audioUri"],"predictedText":body["predictedText"],"inputText":body["inputText"],"wer":body["wer"],"cer":body["cer"]}
+    record = { "language": body["language"] , "sessionID" :body["sessionID"] ,"modelID" : body["modelID"] ,"audioUri":body["audioUri"],"predictedText":body["predictedText"],"inputText":body["inputText"],"wer":body["wer"],"cer":body["cer"]}
     db.save_model_predictions.insert_one(record) # here save model predictions is the collection name which is located inside  specified  database 
     dict_={}
     dict_['message']='*************Success**********************'
