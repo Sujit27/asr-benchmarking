@@ -12,6 +12,7 @@ import StarBorderIcon from "@material-ui/icons/StarBorder";
 import startAudio from "../../assets/start.svg";
 import stopAudio from "../../assets/stop.svg";
 import FetchModel from "../services/fetchModel";
+// import FetchSentence from "../services/fecthSentence";
 import SubmitFeedback from "../services/submitfeedback";
 import ExportResults from "../services/exportresults";
 import AudioReactRecorder, { RecordState } from "audio-react-recorder";
@@ -73,6 +74,7 @@ class Mainform extends Component {
         recordAudio: "",
         base: "",
         show: false,
+        loading: false,
       },
       () => {
         this.getModel("en", "model");
@@ -90,7 +92,6 @@ class Mainform extends Component {
       recordAudio: "",
       predictedText: "",
       modelID: "",
-      micOn: true,
       rating: 0,
     });
     this.getModel(event.target.value, "model");
@@ -114,7 +115,7 @@ class Mainform extends Component {
         const resData = await res.json();
         if (type === "model") {
           this.setState({ setModel: resData });
-          this.setState({ modelID: resData.model_ids[0] });
+          this.setState({ modelID: resData.model_ids[0], loading: false });
         } else {
           this.setState({
             setSentence: resData.generated_text,
@@ -146,6 +147,7 @@ class Mainform extends Component {
     })
       .then(async (res) => {
         const resData = await res.json();
+        console.log('resData', resData)
       })
       .catch((error) => {
         console.log("error", error);
@@ -188,7 +190,7 @@ class Mainform extends Component {
 
   submitForm = () => {
     const apiObj = new ExportResults(
-      this.state.rating,
+      this.state.lang,
       this.state.sessionID,
       this.state.modelID,
       this.state.audioUri,
@@ -204,6 +206,7 @@ class Mainform extends Component {
     })
       .then(async (res) => {
         const resData = await res.json();
+        console.log('resData', resData)
         this.setState({ loading: false });
       })
       .catch((error) => {
@@ -231,26 +234,26 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      this.setState({ predictedText: result.transcript });
-    } else {
+      this.setState({ predictedText: result.transcript, loading: true, show: true });
+      this.getWerScrore()
     }
-    this.setState({ loading: false, show: true });
   };
 
   onStopRecording = (data) => {
     this.setState({ audioUri: data.url, base: this.blobToBase64(data, this) });
   };
 
-  onMicClick = (event) => {
+  onMicClick = () => {
     if (this.state.setSentence) {
       this.setState({
         micOn: false,
         recordAudio: RecordState.START,
         audioUri: "",
+        predictedText: "",
       });
     }
   };
-  onStopClick = (event) => {
+  onStopClick = () => {
     this.setState({
       micOn: true,
       recordAudio: RecordState.STOP,
@@ -398,6 +401,7 @@ class Mainform extends Component {
               value={this.state.predictedText}
               placeholder="Transcribed text here"
               style={{ width: "95%" }}
+              disabled
             />
           </div>
 
@@ -426,10 +430,11 @@ class Mainform extends Component {
                   emptyIcon={<StarBorderIcon fontSize="inherit" />}
                   style={{ fontSize: "2rem" }}
                   onChange={this.handleRating}
+                  disabled={this.state.rating > 0} 
                 />
               </div>
 
-              <div
+              {/* <div
                 style={{
                   marginTop: "1%",
                   marginBottom: "1%",
@@ -474,7 +479,7 @@ class Mainform extends Component {
                   {" "}
                   Thank you
                 </Button>
-              </div>
+              </div> */}
             </>
           ) : (
             <></>

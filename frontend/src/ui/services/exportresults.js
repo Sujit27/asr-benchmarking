@@ -4,7 +4,7 @@ import ENDPOINTS from "./apiendpoints";
 export default class ExportResults extends API {
   constructor(value, sessionID, modelID, audioUri, predictedText, inputText, wer, cer, timeout = 200000) {
     super("POST", timeout, false);
-    this.score = value;
+    this.language = value;
     this.sessionId = sessionID;
     this.modelId = modelID;
     this.audioUrl = audioUri;
@@ -31,7 +31,7 @@ export default class ExportResults extends API {
 
   getBody() {
     return {
-        feedbackScore: this.score,
+        language: this.language,
         sessionID: this.sessionId,
         modelID: this.modelId,
         audioUri: this.audioUrl,
