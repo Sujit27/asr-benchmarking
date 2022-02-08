@@ -75,7 +75,6 @@ class Mainform extends Component {
       {
         rating: 0,
         micOn: true,
-        setSentence: "",
         sessionID: uuidv1(),
         audioUri: "",
         predictedText: "",
@@ -193,6 +192,7 @@ class Mainform extends Component {
         const resData = await res.json();
         console.log('resData', resData)
         this.clearState();
+        this.getSentence();
       })
       .catch((error) => {
         console.log("error", error);
@@ -308,11 +308,11 @@ class Mainform extends Component {
   render() {
     return (
         <div>
-          {this.state.loading ? (
+          {/* {this.state.loading ? (
             <CircularProgress token={true} val={1000} eta={2000 * 1000} />
           ) : (
             <></>
-          )}
+          )} */}
 
           <Grid container>
             <Grid item xs>
@@ -405,6 +405,19 @@ class Mainform extends Component {
                             ></audio>
                             ) : (
                             <></>
+                            )}
+
+                            {this.state.loading ? (
+                              <CircularProgress variant="determinate" size={40} thickness={4} token={true} val={1000} eta={2000 * 1000} />
+                            ) : (
+                              <></>
+                            )}
+                            {this.state.loading ? (
+                              <Typography variant="body2" style={{  textAlign: "center",  display: "flex",  justifyContent: "center", marginBottom: "2%"}}>
+                              Text is getting transcribed...
+                              </Typography>
+                            ) : (
+                              <></>
                             )}
                         </Grid>
                         <Grid  style={{ marginTop: "4%", marginBottom: "1%", display: "flex", flexDirection: "column" }} >

@@ -1,6 +1,7 @@
 import React from "react";
 import { withStyles } from "@material-ui/core/styles";
-import LinearProgress from "@material-ui/core/LinearProgress";
+// import LinearProgress from "@material-ui/core/LinearProgress";
+import CircularProgress, { CircularProgressProps } from '@material-ui/core/CircularProgress';
 
 const styles = {
   root: {
@@ -44,9 +45,9 @@ class LinearDeterminate extends React.Component {
     return (
       <div className={classes.root}>
         {this.props.token===true ?
-        <LinearProgress/>
+        <CircularProgress/>
         :
-        <LinearProgress  variant= "determinate" value={this.state.completed} />
+        <CircularProgress  variant= "determinate" value={this.state.completed} />
         
   }
         
