@@ -34,7 +34,12 @@ const languages = [
     label: "Hindi",
   },
 ];
-
+const models = [
+    {
+        value: '1',
+        label: 'Vakyansh',
+    }
+]
 class Mainform extends Component {
   constructor(props) {
     super(props);
@@ -42,7 +47,7 @@ class Mainform extends Component {
       lang: "en",
       rating: 0,
       micOn: true,
-      setModel: "",
+      setModel: "1",
       modelID: "",
       setSentence: "",
       sessionID: uuidv1(),
@@ -78,7 +83,7 @@ class Mainform extends Component {
       },
       () => {
         this.getModel("en", "model");
-        // this.getModel("en", "sentence");
+        this.getSentence();
       }
     );
   };
@@ -93,14 +98,25 @@ class Mainform extends Component {
       predictedText: "",
       modelID: "",
       rating: 0,
+      setModel: "",
     });
     this.getModel(event.target.value, "model");
     // this.getModel(event.target.value, "sentence");
   };
 
+  // for model selection
+  handleModelChange = (event) => {
+    this.setState({
+      setModel: event.target.value,
+      rating: 0,
+    });
+    this.getSentence();
+  };
+
   componentDidMount() {
     this.setState({ loading: true });
     this.getModel("en", "model");
+    this.getSentence();
     // this.getModel("en", "sentence");
   }
 
@@ -114,7 +130,7 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         if (type === "model") {
-          this.setState({ setModel: resData, modelID: resData.model_ids[0], loading: false, setSentence: '' });
+          this.setState({ setModel: resData.model_ids[0], modelID: resData.model_ids[0], loading: false, setSentence: '' });
         } else {
           this.setState({
             setSentence: resData.generated_text,
@@ -136,7 +152,7 @@ class Mainform extends Component {
     })
       .then(async (res) => {
         const resData = await res.json();
-        console.log("resData ======", resData);
+        // console.log("resData ======", resData);
         this.setState({
             rating: 0,
             setSentence: resData.generated_text,
@@ -154,15 +170,15 @@ class Mainform extends Component {
   // for feedback ratings
   handleRating = (event) => {
     this.setState({ rating: event.target.value });
-    this.updateFeedback(
-      event.target.value,
-      this.state.sessionID,
-      this.state.modelID
-    );
+    // this.updateFeedback(
+    //   event.target.value,
+    //   this.state.sessionID,
+    //   this.state.modelID
+    // );
   };
 
-  updateFeedback = (value, sessionID, modelID) => {
-    const apiObj = new SubmitFeedback(value, sessionID, modelID);
+  updateFeedback = () => {
+    const apiObj = new SubmitFeedback(this.state.rating, this.state.sessionID, this.state.modelID);
     fetch(apiObj.apiEndPoint(), {
       method: "POST",
       headers: apiObj.getHeaders().headers,
@@ -171,6 +187,7 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         console.log('resData', resData)
+        this.clearState();
       })
       .catch((error) => {
         console.log("error", error);
@@ -334,9 +351,20 @@ class Mainform extends Component {
                 ))}
                 </TextField>
 
-                <Button color="primary" variant="contained" onClick={this.getSentence} style={{fontSize: '1.1em', backgroundColor: '#2591e6', width: '40%', textTransform: 'capitalize'}}>
-                    Get Sentence
-                </Button>
+                <TextField
+                id="outlined-select-currency"
+                select
+                style={{ width: "22ch", marginRight: "22%", fontSize:'1.2em' }}
+                value={this.state.setModel}
+                label="Select Model"
+                onChange={this.handleModelChange}
+                >
+                {models.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                    </MenuItem>
+                ))}
+                </TextField>
             </div>
             <div style={{
                 marginTop: "2%",
@@ -403,6 +431,7 @@ class Mainform extends Component {
                         style={{
                         display: "flex",
                         justifyContent: "center",
+                        cursor: 'pointer',
                         }}
                     />
                     )}
@@ -453,12 +482,12 @@ class Mainform extends Component {
                     justifyContent: "center",
                     }}
                 >
-                    <Typography
+                    {/* <Typography
                     fontSize="fontSize"
                     style={{ marginRight: "4%", marginTop: "1%", fontSize: '1.2em'}}
                     >
                     Provide your feedback
-                    </Typography>
+                    </Typography> */}
                     <Rating
                     name="customized-empty"
                     defaultValue={0}
@@ -466,11 +495,10 @@ class Mainform extends Component {
                     emptyIcon={<StarBorderIcon fontSize="inherit" />}
                     style={{ fontSize: "2rem" }}
                     onChange={this.handleRating}
-                    disabled={this.state.rating > 0} 
                     />
                 </div>
 
-                {/* <div
+                <div
                     style={{
                     marginTop: "1%",
                     marginBottom: "1%",
@@ -493,12 +521,12 @@ class Mainform extends Component {
                         height: "46px",
                         marginRight: "5%",
                     }}
-                    onClick={this.clearState}
+                    onClick={this.updateFeedback}
                     >
                     {" "}
-                    Record again
+                        Submit feedback
                     </Button>
-                    <Button
+                    {/* <Button
                     id="back"
                     variant="contained"
                     color="primary"
@@ -514,8 +542,8 @@ class Mainform extends Component {
                     >
                     {" "}
                     Thank you
-                    </Button>
-                </div> */}
+                    </Button> */}
+                </div>
                 </>
             ) : (
                 <></>
