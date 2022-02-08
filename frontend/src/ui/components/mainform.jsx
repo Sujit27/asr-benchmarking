@@ -9,8 +9,8 @@ import { Typography } from "@material-ui/core";
 import { Rating } from "@material-ui/lab";
 import Button from "@material-ui/core/Button";
 import StarBorderIcon from "@material-ui/icons/StarBorder";
-import startAudio from "../../assets/start.svg";
-import stopAudio from "../../assets/stop.svg";
+// import startAudio from "../../assets/start.svg";
+// import stopAudio from "../../assets/stop.svg";
 import FetchModel from "../services/fetchModel";
 import FetchSentence from "../services/fecthSentence";
 import SubmitFeedback from "../services/submitfeedback";
@@ -19,6 +19,14 @@ import AudioReactRecorder, { RecordState } from "audio-react-recorder";
 import GetTranscription from "../services/getTranscription";
 import CircularProgress from "./ProgressBar";
 import WerCerScore  from "../services/werCerScore";
+import Paper from '@material-ui/core/Paper';
+import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardActions from '@material-ui/core/CardActions';
+import IconButton from '@material-ui/core/IconButton';
+import MicIcon from '@material-ui/icons/Mic';
+import StopIcon from '@material-ui/icons/Stop';
 
 const languages = [
   {
@@ -65,11 +73,8 @@ class Mainform extends Component {
   clearState = () => {
     this.setState(
       {
-        lang: "en",
         rating: 0,
         micOn: true,
-        setModel: "",
-        modelID: "",
         setSentence: "",
         sessionID: uuidv1(),
         audioUri: "",
@@ -83,7 +88,6 @@ class Mainform extends Component {
       },
       () => {
         this.getModel("en", "model");
-        this.getSentence();
       }
     );
   };
@@ -116,8 +120,9 @@ class Mainform extends Component {
   componentDidMount() {
     this.setState({ loading: true });
     this.getModel("en", "model");
-    this.getSentence();
-    // this.getModel("en", "sentence");
+    if(this.state.setModel !== ''){
+      this.getSentence();
+    }
   }
 
   getModel = (lan, type) => {
@@ -130,7 +135,7 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         if (type === "model") {
-          this.setState({ setModel: resData.model_ids[0], modelID: resData.model_ids[0], loading: false, setSentence: '' });
+          this.setState({ modelID: resData.model_ids[0], loading: false, setSentence: '' });
         } else {
           this.setState({
             setSentence: resData.generated_text,
@@ -246,7 +251,6 @@ class Mainform extends Component {
     })
       .then(async (res) => {
         const resData = await res.json();
-        console.log('resData', resData)
         this.setState({ loading: false });
       })
       .catch((error) => {
@@ -304,251 +308,142 @@ class Mainform extends Component {
   render() {
     return (
         <div>
-        {this.state.loading ? (
-          <CircularProgress token={true} val={1000} eta={2000 * 1000} />
-        ) : (
-          <></>
-        )}
-        <Box
-          component="form"
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            border: "2px solid #999",
-            padding: "2% 0", borderRadius: '6px',
-            margin: "3% auto", width: '60%',
-            "& .MuiTextField-root": { m: 1, width: "25ch" },
-          }}
-          noValidate
-          autoComplete="off"
-        >
-            <Typography value="" variant="h4">
-                Speech Model Recognition
-            </Typography>
+          {this.state.loading ? (
+            <CircularProgress token={true} val={1000} eta={2000 * 1000} />
+          ) : (
+            <></>
+          )}
 
-            <div style={{
-                marginTop: "4%",
-                marginBottom: "1%",
-                display: "flex",
-                width: "34rem",
-                alignItems: "center",
-                justifyContent: "center",
-                }}
-            >
-                <TextField
-                id="outlined-select-currency"
-                select
-                style={{ width: "22ch", marginRight: "22%", fontSize:'1.2em' }}
-                value={this.state.lang}
-                label="Select Language"
-                onChange={this.handleChange}
-                >
-                {languages.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                    </MenuItem>
-                ))}
-                </TextField>
+          <Grid container>
+            <Grid item xs>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="h4" style={{textAlign:'center', margin: '3% 0'}}>Speech Model Recognition</Typography>
+              <Paper style={{ marginBottom: "4%"}}>
+                <Box component="form" sx={{  }} noValidate  autoComplete="off">
+                  <Card>
+                    <CardContent>
+                        <Grid style={{ marginTop: "2%", display: "flex"}} >
+                           <Grid item xs>
+                            <TextField
+                              id="outlined-select-currency"
+                              select
+                              style={{ width: "96%", fontSize:'1.2em'}}
+                              value={this.state.lang}
+                              label="Select Language"
+                              onChange={this.handleChange}
+                              >
+                              {languages.map((option) => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                  {option.label}
+                                  </MenuItem>
+                              ))}
+                              </TextField>
+                           </Grid>
+                           <Grid item xs>
+                              <TextField
+                                id="outlined-select-currency"
+                                select
+                                style={{ width: "96%", fontSize:'1.2em' }}
+                                value={this.state.setModel}
+                                label="Select Model"
+                                onChange={this.handleModelChange}
+                                >
+                                {models.map((option) => (
+                                    <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                    </MenuItem>
+                                ))}
+                                </TextField>
+                           </Grid>
+                        </Grid>
+                        <Grid style={{ marginTop: "5%", marginBottom: "1%", display: "flex", flexDirection: "column"}} >
+                            <Typography variant="body1" style={{color: 'rgba(0, 0, 0, 0.54)', marginBottom: '1%' }}>Please read</Typography>
+                            <TextareaAutosize aria-label="minimum height"  minRows={5}  placeholder="Loading text...."  
+                            style={{ fontFamily: 'Arial', fontSize: '1.5rem', lineHeight: '1.4'}}  value={this.state.setSentence}  disabled  />
+                        </Grid>
+                        <Grid  style={{ marginTop: "4%", marginBottom: "1%", display: "flex", flexDirection: "column", alignItems: 'center' }} >
+                            <>
+                            <Grid>
+                                {this.state.micOn && (
+                                  <IconButton aria-label="Record Audio" onClick={this.onMicClick} 
+                                    style={{ background: '#1ea46c', color: '#ffffff'}}> 
+                                    <MicIcon style={{fontSize: '3.5rem'}} />
+                                  </IconButton>
+                                // <img src={startAudio} id="mic_image" onClick={this.onMicClick} alt="MIC"
+                                // style={{ display: "flex",  justifyContent: "center",  marginBottom: "2%",  cursor: 'pointer' }}
+                                // />
+                                )}
+                            </Grid>
+                            <Grid style={{ display: "none" }}>
+                                <AudioReactRecorder
+                                state={this.state.recordAudio}
+                                onStop={this.onStopRecording}
+                                style={{ display: "none" }}
+                                />
+                            </Grid>
+                            <Grid style={{ marginBottom: "2%" }}>
+                                {!this.state.micOn && (
+                                <IconButton aria-label="Stop Audio" onClick={this.onStopClick} 
+                                  style={{ background: '#F44336', color: '#ffffff'}}> 
+                                  <StopIcon style={{fontSize: '3.5rem'}} />
+                                </IconButton>
+                                // <img src={stopAudio} id="mic_image" onClick={this.onStopClick} alt="STOP"
+                                //     style={{  display: "flex", justifyContent: "center", cursor: 'pointer' }}
+                                // />
+                                )}
+                            </Grid>
 
-                <TextField
-                id="outlined-select-currency"
-                select
-                style={{ width: "22ch", marginRight: "22%", fontSize:'1.2em' }}
-                value={this.state.setModel}
-                label="Select Model"
-                onChange={this.handleModelChange}
-                >
-                {models.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                    </MenuItem>
-                ))}
-                </TextField>
-            </div>
-            <div style={{
-                marginTop: "2%",
-                marginBottom: "1%",
-                display: "flex",
-                width: "34rem",
-                alignItems: "center",
-                justifyContent: "center",
-                }}
-            >
-                <TextareaAutosize
-                aria-label="minimum height"
-                minRows={5}
-                placeholder="Loading text...."
-                style={{ width: "100%", fontFamily: 'Arial', fontSize: '1em'}}
-                value={this.state.setSentence}
-                disabled
-                />
-            </div>
-            <div
-                style={{
-                marginTop: "1.5%",
-                marginBottom: "1%",
-                display: "flex",
-                width: "34rem",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "1px solid #ccc",
-                flexDirection: "column",
-                padding: "1.5% 0 2%",
-                }}
-            >
-                <>
-                <div style={{ marginBottom: "2%" }}>
-                    {this.state.micOn && (
-                    <img
-                        src={startAudio}
-                        id="mic_image"
-                        onClick={this.onMicClick}
-                        alt="MIC"
-                        style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        marginBottom: "2%",
-                        cursor: 'pointer',
-                        }}
-                    />
-                    )}
-                </div>
-                <div style={{ display: "none" }}>
-                    <AudioReactRecorder
-                    state={this.state.recordAudio}
-                    onStop={this.onStopRecording}
-                    style={{ display: "none" }}
-                    />
-                </div>
-                <div style={{ marginBottom: "2%" }}>
-                    {!this.state.micOn && (
-                    <img
-                        src={stopAudio}
-                        id="mic_image"
-                        onClick={this.onStopClick}
-                        alt="STOP"
-                        style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        cursor: 'pointer',
-                        }}
-                    />
-                    )}
-                </div>
+                            {!this.state.micOn && (
+                              <Typography variant="body2" style={{  textAlign: "center",  display: "flex",  justifyContent: "center", marginBottom: "2%"}}>
+                              Start speaking. We are recording...
+                              </Typography>
+                            )}
+                            </>
+                            {this.state.audioUri ? (
+                            <audio  controls  src={this.state.audioUri} style={{ marginBottom: "2%" }}
+                            ></audio>
+                            ) : (
+                            <></>
+                            )}
+                        </Grid>
+                        <Grid  style={{ marginTop: "4%", marginBottom: "1%", display: "flex", flexDirection: "column" }} >
+                            <Typography variant="body1" style={{color: 'rgba(0, 0, 0, 0.54)', marginBottom: '1%' }}>Transcribed text</Typography>
+                            <TextareaAutosize
+                            aria-label="minimum height"
+                            minRows={5}
+                            value={this.state.predictedText}
+                            placeholder="Transcribed text here"
+                            style={{ fontFamily: 'Arial', fontSize: '1.5rem', lineHeight: '1.4' }}
+                            disabled
+                            />
+                        </Grid>
+                    </CardContent>
+                    <CardActions style={{justifyContent: 'center'}}>
+                        {this.state.show ? (
+                            <>
+                            <Grid style={{ marginBottom: "3%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: 'center'}}>
+                                <Rating  name="customized-empty" defaultValue={0}  size="large" emptyIcon={<StarBorderIcon fontSize="inherit" />}  
+                                style={{ marginBottom: "6%", fontSize: "4rem" }}
+                                onChange={this.handleRating}
+                                />
 
-                {!this.state.micOn && (
-                    <Typography
-                    variant="body"
-                    style={{
-                        textAlign: "center",
-                        display: "flex",
-                        justifyContent: "center",
-                        marginBottom: "2%",
-                    }}
-                    >
-                    Start Speaking...
-                    </Typography>
-                )}
-                </>
-                {this.state.audioUri ? (
-                <audio
-                    controls
-                    src={this.state.audioUri}
-                    style={{ marginBottom: "2%" }}
-                ></audio>
-                ) : (
-                <></>
-                )}
-                <TextareaAutosize
-                aria-label="minimum height"
-                minRows={5}
-                value={this.state.predictedText}
-                placeholder="Transcribed text here"
-                style={{ width: "95%", fontFamily: 'Arial', fontSize: '1em' }}
-                disabled
-                />
-            </div>
-
-            {this.state.show ? (
-                <>
-                <div
-                    style={{
-                    marginTop: "1%",
-                    marginBottom: "1%",
-                    display: "flex",
-                    width: "34rem",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    }}
-                >
-                    {/* <Typography
-                    fontSize="fontSize"
-                    style={{ marginRight: "4%", marginTop: "1%", fontSize: '1.2em'}}
-                    >
-                    Provide your feedback
-                    </Typography> */}
-                    <Rating
-                    name="customized-empty"
-                    defaultValue={0}
-                    size="large"
-                    emptyIcon={<StarBorderIcon fontSize="inherit" />}
-                    style={{ fontSize: "2rem" }}
-                    onChange={this.handleRating}
-                    />
-                </div>
-
-                <div
-                    style={{
-                    marginTop: "1%",
-                    marginBottom: "1%",
-                    display: "flex",
-                    width: "32rem",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    }}
-                >
-                    <Button
-                    id="back"
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    style={{
-                        width: "150px",
-                        backgroundColor: "#1C9AB7",
-                        borderRadius: "5px 5px 5px 5px",
-                        color: "#FFFFFF",
-                        height: "46px",
-                        marginRight: "5%",
-                    }}
-                    onClick={this.updateFeedback}
-                    >
-                    {" "}
-                        Submit feedback
-                    </Button>
-                    {/* <Button
-                    id="back"
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    onClick={this.getWerScrore}
-                    style={{
-                        width: "135px",
-                        backgroundColor: "#1C9AB7",
-                        borderRadius: "5px 5px 5px 5px",
-                        color: "#FFFFFF",
-                        height: "46px",
-                    }}
-                    >
-                    {" "}
-                    Thank you
-                    </Button> */}
-                </div>
-                </>
-            ) : (
-                <></>
-            )}
-        </Box>
+                                <Button id="back" variant="contained" size="large" color="primary" onClick={this.updateFeedback} >
+                                {" "}  Submit feedback
+                                </Button>
+                            </Grid>
+                            </>
+                        ) : (
+                            <></>
+                        )}
+                    </CardActions>
+                  </Card>
+                </Box>
+              </Paper>
+            </Grid>
+            <Grid item xs>
+            </Grid>
+          </Grid>
       </div>
     );
   }
