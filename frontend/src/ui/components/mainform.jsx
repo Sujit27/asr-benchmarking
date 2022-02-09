@@ -27,6 +27,7 @@ import CardActions from '@material-ui/core/CardActions';
 import IconButton from '@material-ui/core/IconButton';
 import MicIcon from '@material-ui/icons/Mic';
 import StopIcon from '@material-ui/icons/Stop';
+import Snackbar from "./Snackbar";
 
 const languages = [
   {
@@ -48,6 +49,7 @@ const models = [
         label: 'Vakyansh',
     }
 ]
+
 class Mainform extends Component {
   constructor(props) {
     super(props);
@@ -67,7 +69,22 @@ class Mainform extends Component {
       base: "",
       loading: false,
       show: false,
+      currentCount: 21,
+      dialogMessage: null,
+      timeOut: 3000,
+      variant: "info",
     };
+  }
+
+  timer() {
+    console.log('*timer*', this.state.currentCount)
+    this.setState({
+      currentCount: this.state.currentCount - 1
+    })
+    if(this.state.currentCount < 1) { 
+      this.onStopClick();
+      clearInterval(this.intervalId);
+    }
   }
 
   clearState = () => {
@@ -113,7 +130,6 @@ class Mainform extends Component {
       setModel: event.target.value,
       rating: 0,
     });
-    this.getSentence();
   };
 
   componentDidMount() {
@@ -197,11 +213,6 @@ class Mainform extends Component {
       });
   };
 
-  // on form submit
-  //   handleSubmit = (event) => {
-  //     console.log("form submit", event.target.value);
-  //     this.submitForm(event.target.value);
-  //   };
 
   getWerScrore = async () => {
     const obj = new WerCerScore(this.state.predictedText, this.state.setSentence, 'wer');
@@ -251,6 +262,7 @@ class Mainform extends Component {
         const resData = await res.json();
         console.log('resdata', resData);
         this.setState({ loading: false });
+        this.setState({ dialogMessage: 'Please provide your feedback' })
       })
       .catch((error) => {
         console.log("error", error);
@@ -288,6 +300,7 @@ class Mainform extends Component {
 
   onMicClick = () => {
     if (this.state.setSentence && !this.state.predictedText) {
+      this.intervalId = setInterval(this.timer.bind(this), 1000);
       this.setState({
         micOn: false,
         recordAudio: RecordState.START,
@@ -295,6 +308,7 @@ class Mainform extends Component {
         predictedText: "",
       });
     } else if (this.state.setSentence && this.state.predictedText) {
+      this.intervalId = setInterval(this.timer.bind(this), 1000);
       this.setState({
         setSentence:'',
         rating: 0,
@@ -309,6 +323,7 @@ class Mainform extends Component {
       this.getSentence();
     }
   };
+
   onStopClick = () => {
     this.setState({
       micOn: true,
@@ -317,15 +332,23 @@ class Mainform extends Component {
     });
   };
 
+  snackBarMessage = () => {
+    return (
+        <div>
+            <Snackbar
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                open={!this.state.timeOut}
+                autoHideDuration={this.state.timeOut}
+                variant={this.state.variant}
+                message={this.state.dialogMessage}
+            />
+        </div>
+    );
+  };
+
   render() {
     return (
         <div>
-          {/* {this.state.loading ? (
-            <CircularProgress token={true} val={1000} eta={2000 * 1000} />
-          ) : (
-            <></>
-          )} */}
-
           <Grid container>
             <Grid item xs>
             </Grid>
@@ -463,6 +486,7 @@ class Mainform extends Component {
                         )}
                     </CardActions>
                   </Card>
+                  {this.state.dialogMessage && this.snackBarMessage()}
                 </Box>
               </Paper>
             </Grid>
