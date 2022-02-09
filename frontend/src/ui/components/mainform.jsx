@@ -104,7 +104,7 @@ class Mainform extends Component {
       setModel: "",
     });
     this.getModel(event.target.value, "model");
-    // this.getModel(event.target.value, "sentence");
+    this.getSentence(event.target.value);
   };
 
   // for model selection
@@ -119,9 +119,7 @@ class Mainform extends Component {
   componentDidMount() {
     this.setState({ loading: true });
     this.getModel("en", "model");
-    if(this.state.setModel !== ''){
-      this.getSentence();
-    }
+    this.getSentence();
   }
 
   getModel = (lan, type) => {
@@ -147,8 +145,8 @@ class Mainform extends Component {
       });
   };
 
-  getSentence = () => {
-    const apiObj = new FetchSentence(this.state.lang);
+  getSentence = (lan) => {
+    const apiObj = lan ? new FetchSentence(lan) : new FetchSentence(this.state.lang);
     fetch(apiObj.apiEndPoint(), {
       method: "POST",
       headers: apiObj.getHeaders().headers,
@@ -251,6 +249,7 @@ class Mainform extends Component {
     })
       .then(async (res) => {
         const resData = await res.json();
+        console.log('resdata', resData);
         this.setState({ loading: false });
       })
       .catch((error) => {
@@ -288,13 +287,26 @@ class Mainform extends Component {
   };
 
   onMicClick = () => {
-    if (this.state.setSentence) {
+    if (this.state.setSentence && !this.state.predictedText) {
       this.setState({
         micOn: false,
         recordAudio: RecordState.START,
         audioUri: "",
         predictedText: "",
       });
+    } else if (this.state.setSentence && this.state.predictedText) {
+      this.setState({
+        setSentence:'',
+        rating: 0,
+        micOn: true,
+        sessionID: "",
+        audioUri: "",
+        predictedText: "",
+        wer: "",
+        cer: "",
+        recordAudio: "",
+      });
+      this.getSentence();
     }
   };
   onStopClick = () => {
