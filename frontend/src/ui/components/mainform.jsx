@@ -9,8 +9,6 @@ import { Typography } from "@material-ui/core";
 import { Rating } from "@material-ui/lab";
 import Button from "@material-ui/core/Button";
 import StarBorderIcon from "@material-ui/icons/StarBorder";
-// import startAudio from "../../assets/start.svg";
-// import stopAudio from "../../assets/stop.svg";
 import FetchModel from "../services/fetchModel";
 import FetchSentence from "../services/fecthSentence";
 import SubmitFeedback from "../services/submitfeedback";
@@ -47,7 +45,11 @@ const models = [
     {
         value: '1',
         label: 'Vakyansh',
-    }
+    },
+    {
+      value: '2',
+      label: 'Indic',
+  }
 ]
 
 class Mainform extends Component {
@@ -57,7 +59,7 @@ class Mainform extends Component {
       lang: "en",
       rating: 0,
       micOn: true,
-      setModel: "1",
+      setModel: models[0].value,
       modelID: "",
       setSentence: "",
       sessionID: uuidv1(),
@@ -77,7 +79,6 @@ class Mainform extends Component {
   }
 
   timer() {
-    console.log('*timer*', this.state.currentCount)
     this.setState({
       currentCount: this.state.currentCount - 1
     })
@@ -118,7 +119,8 @@ class Mainform extends Component {
       predictedText: "",
       modelID: "",
       rating: 0,
-      setModel: "",
+      loading: false,
+      setModel: models.length > 0 ? models[0].value: '',
     });
     this.getModel(event.target.value, "model");
     this.getSentence(event.target.value);
@@ -133,7 +135,7 @@ class Mainform extends Component {
   };
 
   componentDidMount() {
-    this.setState({ loading: true });
+    // this.setState({ loading: true });
     this.getModel("en", "model");
     this.getSentence();
   }
@@ -148,10 +150,10 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         if (type === "model") {
-          this.setState({ modelID: resData.model_ids[0], loading: false, setSentence: '' });
+          this.setState({ modelID: resData.model_ids[0], loading: false});
         } else {
           this.setState({
-            setSentence: resData.generated_text,
+            // setSentence: resData.generated_text,
             loading: false,
           });
         }
@@ -179,6 +181,7 @@ class Mainform extends Component {
             audioUri: '',
             predictedText: '',
         });
+        this.getModel(lan, "model");
       })
       .catch((error) => {
         console.log("error", error);
@@ -223,7 +226,7 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      this.setState({ loading: true, wer: result.wer_score });
+      this.setState({ loading: false, wer: result.wer_score });
       this.getCerScrore()
     }
   }
@@ -237,7 +240,7 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      this.setState({ loading: true, cer: result.cer_score });
+      this.setState({ loading: false, cer: result.cer_score });
       this.submitForm()
     }
   }
@@ -261,8 +264,8 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         console.log('resdata', resData);
-        this.setState({ loading: false });
         this.setState({ dialogMessage: 'Please provide your feedback' })
+        this.setState({ loading: false });
       })
       .catch((error) => {
         console.log("error", error);
@@ -289,7 +292,7 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      this.setState({ predictedText: result.transcript, loading: true, show: true });
+      this.setState({ predictedText: result.transcript, loading: false, show: true });
       this.getWerScrore()
     }
   };
@@ -308,17 +311,16 @@ class Mainform extends Component {
         predictedText: "",
       });
     } else if (this.state.setSentence && this.state.predictedText) {
-      this.intervalId = setInterval(this.timer.bind(this), 1000);
+      // this.intervalId = setInterval(this.timer.bind(this), 1000);
       this.setState({
         setSentence:'',
         rating: 0,
-        micOn: true,
-        sessionID: "",
+        micOn: false,
         audioUri: "",
         predictedText: "",
         wer: "",
         cer: "",
-        recordAudio: "",
+        recordAudio: RecordState.START,
       });
       this.getSentence();
     }
@@ -330,13 +332,14 @@ class Mainform extends Component {
       recordAudio: RecordState.STOP,
       loading: true,
     });
+    clearInterval(this.intervalId);
   };
 
   snackBarMessage = () => {
     return (
         <div>
             <Snackbar
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                 open={!this.state.timeOut}
                 autoHideDuration={this.state.timeOut}
                 variant={this.state.variant}
@@ -355,7 +358,7 @@ class Mainform extends Component {
             <Grid item xs={6}>
               <Typography variant="h4" style={{textAlign:'center', margin: '3% 0'}}>Speech Model Recognition</Typography>
               <Paper style={{ marginBottom: "4%"}}>
-                <Box component="form" sx={{  }} noValidate  autoComplete="off">
+                <Box component="form" sx={{  }} noValidate  autoComplete="off" style={this.state.loading ? {pointerEvents: "none", opacity: "0.4"} : {}}>
                   <Card>
                     <CardContent>
                         <Grid style={{ marginTop: "2%", display: "flex"}} >
