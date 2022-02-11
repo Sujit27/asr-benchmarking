@@ -88,9 +88,9 @@ def get_model_ids():
         confs = json.load(f)
     for model in confs['models']:
         if model['language_code']==language:
-            model_ids.append(model['model_id'])
+            model_ids.append({"model_id" : model['model_id'] , "model_name" : model["model_type"]})
         
-    return flask.jsonify({"model_ids":model_ids})
+    return flask.jsonify({"model_info":model_ids})
 
 
 @app.route("/get_cer_score",methods=['POST'])

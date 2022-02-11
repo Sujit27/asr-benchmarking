@@ -17,6 +17,31 @@
         "model_id": 3,
         "model_type": "vakyansh",
         "is_active": true  
+      },
+      {
+        "language_code": "ta",
+        "model_id": 4,
+        "model_type": "vakyansh",
+        "is_active": true
+      },
+      {
+        "language_code": "en",
+        "model_id": 5,
+        "model_type": "indic-asr",
+        "is_active": true
+      },
+      {
+        "language_code": "hi",
+        "model_id": 6,
+        "model_type": "indic-asr",
+        "is_active": true  
+      },
+      {
+        "language_code": "ta",
+        "model_id": 7,
+        "model_type": "indic-asr",
+        "is_active": true  
       }  
+      
     ]
 }
