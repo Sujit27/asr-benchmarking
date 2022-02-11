@@ -27,7 +27,7 @@ import MicIcon from '@material-ui/icons/Mic';
 // import SettingsVoiceIcon from '@material-ui/icons/SettingsVoice';
 import StopIcon from '@material-ui/icons/Stop';
 import Snackbar from "./Snackbar";
-import {StreamingClient,SocketStatus} from '@project-sunbird/open-speech-streaming-client';
+// import {StreamingClient,SocketStatus} from '@project-sunbird/open-speech-streaming-client';
 
 const languages = [
   {
@@ -79,7 +79,7 @@ class Mainform extends Component {
       variant: "info",
     };
 
-    this.streamingClient= new StreamingClient();
+    // this.streamingClient= new StreamingClient();
   }
 
   timer() {
@@ -333,9 +333,9 @@ class Mainform extends Component {
     // }
   };
 
-  onRTMicClick = () =>{
+  // onRTMicClick = () =>{
     //Connect to inferencing server
-    this.streamingClient.connect('https://meity-dev-asr.ulcacontrib.org/', 'en', function (action, id) {
+    // this.streamingClient.connect('https://meity-dev-asr.ulcacontrib.org/', 'en', function (action, id) {
       // timerRef.current = setTimeout(() => {
       //     if (streaming.isStreaming) handleStop();
       //   }, 61000);
@@ -345,22 +345,22 @@ class Mainform extends Component {
         //   audioUri: "",
         //   predictedText: "",
         // });
-      if (action === SocketStatus.CONNECTED) {
+      // if (action === SocketStatus.CONNECTED) {
           // Once connection is succesful, start streaming
-          this.streamingClient.startStreaming(function (transcript) {
+          // this.streamingClient.startStreaming(function (transcript) {
               // transcript will give you the text which can be used further
-              console.log('transcript:', transcript);
-          }, (e) => {
-              console.log("I got error", e);
-          })
-      } else if (action === SocketStatus.TERMINATED) {
-          // Socket is closed and punctuation can be done after it.
-      } else {
-          //unexpected failures action on connect.
-          console.log("Action", action, id);
-      }
-    })
-  }
+    //           console.log('transcript:', transcript);
+    //       }, (e) => {
+    //           console.log("I got error", e);
+    //       })
+    //   } else if (action === SocketStatus.TERMINATED) {
+    //       // Socket is closed and punctuation can be done after it.
+    //   } else {
+    //       //unexpected failures action on connect.
+    //       console.log("Action", action, id);
+    //   }
+    // })
+  // }
 
   onStopClick = () => {
     this.setState({
