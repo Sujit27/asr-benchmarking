@@ -1,6 +1,5 @@
 import React from "react";
 import { withStyles } from "@material-ui/core/styles";
-// import LinearProgress from "@material-ui/core/LinearProgress";
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 const styles = {
@@ -32,11 +31,11 @@ class LinearDeterminate extends React.Component {
     const { completed } = this.state;
     if (completed === 100) {
       clearInterval(this.timer);
-        this.props.handleRefresh();
+        // this.props.handleRefresh();
     } else {
       
       this.setState({ completed: completed + 1 });
-      this.props.handleRefresh();
+      // this.props.handleRefresh();
     }
   };
 

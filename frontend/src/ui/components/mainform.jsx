@@ -9,8 +9,6 @@ import { Typography } from "@material-ui/core";
 import { Rating } from "@material-ui/lab";
 import Button from "@material-ui/core/Button";
 import StarBorderIcon from "@material-ui/icons/StarBorder";
-// import startAudio from "../../assets/start.svg";
-// import stopAudio from "../../assets/stop.svg";
 import FetchModel from "../services/fetchModel";
 import FetchSentence from "../services/fecthSentence";
 import SubmitFeedback from "../services/submitfeedback";
@@ -26,7 +24,10 @@ import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import IconButton from '@material-ui/core/IconButton';
 import MicIcon from '@material-ui/icons/Mic';
+// import SettingsVoiceIcon from '@material-ui/icons/SettingsVoice';
 import StopIcon from '@material-ui/icons/Stop';
+import Snackbar from "./Snackbar";
+// import {StreamingClient,SocketStatus} from '@project-sunbird/open-speech-streaming-client';
 
 const languages = [
   {
@@ -46,8 +47,13 @@ const models = [
     {
         value: '1',
         label: 'Vakyansh',
-    }
+    },
+    {
+      value: '2',
+      label: 'Indic',
+  }
 ]
+
 class Mainform extends Component {
   constructor(props) {
     super(props);
@@ -55,7 +61,7 @@ class Mainform extends Component {
       lang: "en",
       rating: 0,
       micOn: true,
-      setModel: "1",
+      setModel: models[0].value,
       modelID: "",
       setSentence: "",
       sessionID: uuidv1(),
@@ -67,7 +73,23 @@ class Mainform extends Component {
       base: "",
       loading: false,
       show: false,
+      currentCount: 20,
+      dialogMessage: null,
+      timeOut: 3000,
+      variant: "info",
     };
+
+    // this.streamingClient= new StreamingClient();
+  }
+
+  timer() {
+    this.setState({
+      currentCount: this.state.currentCount - 1
+    })
+    if(this.state.currentCount < 1) { 
+      this.onStopClick();
+      clearInterval(this.intervalId);
+    }
   }
 
   clearState = () => {
@@ -84,9 +106,11 @@ class Mainform extends Component {
         base: "",
         show: false,
         loading: false,
+        currentCount: 20,
       },
       () => {
-        this.getModel("en", "model");
+        this.getModel(this.state.lang, "model");
+        this.getSentence();
       }
     );
   };
@@ -101,7 +125,9 @@ class Mainform extends Component {
       predictedText: "",
       modelID: "",
       rating: 0,
-      setModel: "",
+      currentCount: 20,
+      loading: false,
+      setModel: models.length > 0 ? models[0].value: '',
     });
     this.getModel(event.target.value, "model");
     this.getSentence(event.target.value);
@@ -113,11 +139,10 @@ class Mainform extends Component {
       setModel: event.target.value,
       rating: 0,
     });
-    this.getSentence();
   };
 
   componentDidMount() {
-    this.setState({ loading: true });
+    // this.setState({ loading: true });
     this.getModel("en", "model");
     this.getSentence();
   }
@@ -132,10 +157,10 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         if (type === "model") {
-          this.setState({ modelID: resData.model_ids[0], loading: false, setSentence: '' });
+          this.setState({ modelID: resData.model_ids[0], loading: false});
         } else {
           this.setState({
-            setSentence: resData.generated_text,
+            // setSentence: resData.generated_text,
             loading: false,
           });
         }
@@ -163,6 +188,7 @@ class Mainform extends Component {
             audioUri: '',
             predictedText: '',
         });
+        // this.getModel(lan, "model");
       })
       .catch((error) => {
         console.log("error", error);
@@ -189,19 +215,13 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         console.log('resData', resData)
-        this.clearState();
-        this.getSentence();
+        this.submitForm();
       })
       .catch((error) => {
         console.log("error", error);
       });
   };
 
-  // on form submit
-  //   handleSubmit = (event) => {
-  //     console.log("form submit", event.target.value);
-  //     this.submitForm(event.target.value);
-  //   };
 
   getWerScrore = async () => {
     const obj = new WerCerScore(this.state.predictedText, this.state.setSentence, 'wer');
@@ -212,7 +232,7 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      this.setState({ loading: true, wer: result.wer_score });
+      this.setState({ loading: false, wer: result.wer_score });
       this.getCerScrore()
     }
   }
@@ -226,8 +246,7 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      this.setState({ loading: true, cer: result.cer_score });
-      this.submitForm()
+      this.setState({ loading: false, cer: result.cer_score });
     }
   }
 
@@ -251,6 +270,7 @@ class Mainform extends Component {
         const resData = await res.json();
         console.log('resdata', resData);
         this.setState({ loading: false });
+        this.clearState();
       })
       .catch((error) => {
         console.log("error", error);
@@ -277,7 +297,8 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      this.setState({ predictedText: result.transcript, loading: true, show: true });
+      this.setState({ predictedText: result.transcript, loading: false, show: true });
+      this.setState({ dialogMessage: 'Please provide your feedback' })
       this.getWerScrore()
     }
   };
@@ -288,51 +309,92 @@ class Mainform extends Component {
 
   onMicClick = () => {
     if (this.state.setSentence && !this.state.predictedText) {
+      this.intervalId = setInterval(this.timer.bind(this), 1000);
       this.setState({
         micOn: false,
         recordAudio: RecordState.START,
         audioUri: "",
         predictedText: "",
       });
-    } else if (this.state.setSentence && this.state.predictedText) {
-      this.setState({
-        setSentence:'',
-        rating: 0,
-        micOn: true,
-        sessionID: "",
-        audioUri: "",
-        predictedText: "",
-        wer: "",
-        cer: "",
-        recordAudio: "",
-      });
-      this.getSentence();
-    }
+    } 
+    // else if (this.state.setSentence && this.state.predictedText) {
+    //   // this.intervalId = setInterval(this.timer.bind(this), 1000);
+    //   this.setState({
+    //     setSentence:'',
+    //     rating: 0,
+    //     micOn: false,
+    //     audioUri: "",
+    //     predictedText: "",
+    //     wer: "",
+    //     cer: "",
+    //     recordAudio: RecordState.START,
+    //   });
+    //   this.getSentence();
+    // }
   };
+
+  // onRTMicClick = () =>{
+    //Connect to inferencing server
+    // this.streamingClient.connect('https://meity-dev-asr.ulcacontrib.org/', 'en', function (action, id) {
+      // timerRef.current = setTimeout(() => {
+      //     if (streaming.isStreaming) handleStop();
+      //   }, 61000);
+        // setStreamingState("listen");
+        // this.setState({
+        //   recordAudio: RecordState.START,
+        //   audioUri: "",
+        //   predictedText: "",
+        // });
+      // if (action === SocketStatus.CONNECTED) {
+          // Once connection is succesful, start streaming
+          // this.streamingClient.startStreaming(function (transcript) {
+              // transcript will give you the text which can be used further
+    //           console.log('transcript:', transcript);
+    //       }, (e) => {
+    //           console.log("I got error", e);
+    //       })
+    //   } else if (action === SocketStatus.TERMINATED) {
+    //       // Socket is closed and punctuation can be done after it.
+    //   } else {
+    //       //unexpected failures action on connect.
+    //       console.log("Action", action, id);
+    //   }
+    // })
+  // }
+
   onStopClick = () => {
     this.setState({
       micOn: true,
       recordAudio: RecordState.STOP,
       loading: true,
     });
+    clearInterval(this.intervalId);
+  };
+
+  snackBarMessage = () => {
+    return (
+        <div>
+            <Snackbar
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                open={!this.state.timeOut}
+                autoHideDuration={this.state.timeOut}
+                variant={this.state.variant}
+                message={this.state.dialogMessage}
+            />
+        </div>
+    );
   };
 
   render() {
     return (
         <div>
-          {/* {this.state.loading ? (
-            <CircularProgress token={true} val={1000} eta={2000 * 1000} />
-          ) : (
-            <></>
-          )} */}
-
           <Grid container>
             <Grid item xs>
             </Grid>
             <Grid item xs={6}>
               <Typography variant="h4" style={{textAlign:'center', margin: '3% 0'}}>Speech Model Recognition</Typography>
               <Paper style={{ marginBottom: "4%"}}>
-                <Box component="form" sx={{  }} noValidate  autoComplete="off">
+                <Box component="form" sx={{  }} noValidate  autoComplete="off" style={this.state.loading ? {pointerEvents: "none", opacity: "0.4"} : {}}>
                   <Card>
                     <CardContent>
                         <Grid style={{ marginTop: "2%", display: "flex"}} >
@@ -376,7 +438,7 @@ class Mainform extends Component {
                         </Grid>
                         <Grid  style={{ marginTop: "4%", marginBottom: "1%", display: "flex", flexDirection: "column", alignItems: 'center' }} >
                             <>
-                            <Grid>
+                            <Grid style={this.state.predictedText ? {pointerEvents: "none", opacity: "0.4"} : {}}>
                                 {this.state.micOn && (
                                   <IconButton aria-label="Record Audio" onClick={this.onMicClick} 
                                     style={{ background: '#1ea46c', color: '#ffffff'}}> 
@@ -386,6 +448,12 @@ class Mainform extends Component {
                                 // style={{ display: "flex",  justifyContent: "center",  marginBottom: "2%",  cursor: 'pointer' }}
                                 // />
                                 )}
+                                {/* {this.state.micOn && this.state.modelID === 1 && (
+                                  <IconButton aria-label="Record Audio" onClick={this.onRTMicClick} 
+                                    style={{ background: '#1ea46c', color: '#ffffff'}}> 
+                                    <SettingsVoiceIcon style={{fontSize: '3.5rem'}} />
+                                  </IconButton>
+                                )} */}
                             </Grid>
                             <Grid style={{ display: "none" }}>
                                 <AudioReactRecorder
@@ -453,7 +521,7 @@ class Mainform extends Component {
                                 onChange={this.handleRating}
                                 />
 
-                                <Button id="back" variant="contained" size="large" color="primary" onClick={this.updateFeedback} >
+                                <Button id="back" variant="contained" size="large" color="primary" onClick={this.updateFeedback} disabled={this.state.rating === 0} >
                                 {" "}  Submit feedback
                                 </Button>
                             </Grid>
@@ -463,6 +531,7 @@ class Mainform extends Component {
                         )}
                     </CardActions>
                   </Card>
+                  {this.state.dialogMessage && this.snackBarMessage()}
                 </Box>
               </Paper>
             </Grid>
