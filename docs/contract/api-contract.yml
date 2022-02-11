@@ -53,19 +53,19 @@ paths:
         required: true
       responses:
         '200':
-          description: Request Successfull.
+          description: User has verified successfully.
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Status'
         '400':
-          description: On input errors causing failure.
+          description: On input errors causing failure in user verification.
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: On system level errors causing failure.
+          description: On system level errors causing failure in user verification.
           content:
             '*/*':
               schema:
@@ -85,23 +85,86 @@ paths:
         required: true
       responses:
         '200':
-          description: Request Successfull.
+          description: apiKey search is successful.
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Status'
         '400':
-          description: On input errors causing failure.
+          description: On input errors causing failure in auth token search.
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: On system level errors causing failure.
+          description: On system level errors causing failure in auth token search.
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
+                
+  /v1/get_vakyansh_transcription:
+    post:
+      tags:
+        - Get model prediction
+      summary: get the predicted transcription for audio file
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/transcriptionRequest'
+        required: true
+      responses:
+        '200':
+          description: apiKey search is successful.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Status'
+        '400':
+          description: On input errors causing failure in auth token search.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: On system level errors causing failure in auth token search.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /v1/get_indic_transcription:
+    post:
+      tags:
+        - Get model prediction
+      summary: get the predicted transcription for audio file
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/transcriptionRequest'
+        required: true
+      responses:
+        '200':
+          description: apiKey search is successful.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Status'
+        '400':
+          description: On input errors causing failure in auth token search.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: On system level errors causing failure in auth token search.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+
   
 components:
   schemas:
@@ -138,7 +201,7 @@ components:
     exportRequest:
       type: object
       required:
-        - feedbackScore
+        - language
         - sessionID
         - modelID
         - audioUri
@@ -147,9 +210,9 @@ components:
         - wer
         - cer
       properties:
-        feedbackScore:
-          type: integer
-          description: value of submitted rating.
+        language:
+          type: string
+          description: two letter language code
         sessionID:
           type: string
           description: unique sessionid value.
@@ -171,6 +234,26 @@ components:
         cer:
           type: number
           description: cer score calculated from predicted and real sentence
+          
+          
+          
+    transcriptionRequest:
+      type: object
+      required:
+        - language
+        - audioContent
+
+      properties:
+        language:
+          type: string
+          description: two letter language code
+        audioContent:
+          type: string
+          format : byte
+          description: base64 audio content
+        modelID:
+          type: string
+          description: unique modelid value.
       
     SentenceStatus:
       type: object
