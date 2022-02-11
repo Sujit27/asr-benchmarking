@@ -24,8 +24,10 @@ import CardContent from '@material-ui/core/CardContent';
 import CardActions from '@material-ui/core/CardActions';
 import IconButton from '@material-ui/core/IconButton';
 import MicIcon from '@material-ui/icons/Mic';
+// import SettingsVoiceIcon from '@material-ui/icons/SettingsVoice';
 import StopIcon from '@material-ui/icons/Stop';
 import Snackbar from "./Snackbar";
+import {StreamingClient,SocketStatus} from '@project-sunbird/open-speech-streaming-client';
 
 const languages = [
   {
@@ -71,11 +73,13 @@ class Mainform extends Component {
       base: "",
       loading: false,
       show: false,
-      currentCount: 21,
+      currentCount: 20,
       dialogMessage: null,
       timeOut: 3000,
       variant: "info",
     };
+
+    this.streamingClient= new StreamingClient();
   }
 
   timer() {
@@ -102,9 +106,11 @@ class Mainform extends Component {
         base: "",
         show: false,
         loading: false,
+        currentCount: 20,
       },
       () => {
-        this.getModel("en", "model");
+        this.getModel(this.state.lang, "model");
+        this.getSentence();
       }
     );
   };
@@ -119,6 +125,7 @@ class Mainform extends Component {
       predictedText: "",
       modelID: "",
       rating: 0,
+      currentCount: 20,
       loading: false,
       setModel: models.length > 0 ? models[0].value: '',
     });
@@ -181,7 +188,7 @@ class Mainform extends Component {
             audioUri: '',
             predictedText: '',
         });
-        this.getModel(lan, "model");
+        // this.getModel(lan, "model");
       })
       .catch((error) => {
         console.log("error", error);
@@ -208,8 +215,7 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         console.log('resData', resData)
-        this.clearState();
-        this.getSentence();
+        this.submitForm();
       })
       .catch((error) => {
         console.log("error", error);
@@ -241,7 +247,6 @@ class Mainform extends Component {
     if (fetchObj.ok) {
       const result = await fetchObj.json();
       this.setState({ loading: false, cer: result.cer_score });
-      this.submitForm()
     }
   }
 
@@ -264,8 +269,8 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         console.log('resdata', resData);
-        this.setState({ dialogMessage: 'Please provide your feedback' })
         this.setState({ loading: false });
+        this.clearState();
       })
       .catch((error) => {
         console.log("error", error);
@@ -293,6 +298,7 @@ class Mainform extends Component {
     if (fetchObj.ok) {
       const result = await fetchObj.json();
       this.setState({ predictedText: result.transcript, loading: false, show: true });
+      this.setState({ dialogMessage: 'Please provide your feedback' })
       this.getWerScrore()
     }
   };
@@ -310,21 +316,51 @@ class Mainform extends Component {
         audioUri: "",
         predictedText: "",
       });
-    } else if (this.state.setSentence && this.state.predictedText) {
-      // this.intervalId = setInterval(this.timer.bind(this), 1000);
-      this.setState({
-        setSentence:'',
-        rating: 0,
-        micOn: false,
-        audioUri: "",
-        predictedText: "",
-        wer: "",
-        cer: "",
-        recordAudio: RecordState.START,
-      });
-      this.getSentence();
-    }
+    } 
+    // else if (this.state.setSentence && this.state.predictedText) {
+    //   // this.intervalId = setInterval(this.timer.bind(this), 1000);
+    //   this.setState({
+    //     setSentence:'',
+    //     rating: 0,
+    //     micOn: false,
+    //     audioUri: "",
+    //     predictedText: "",
+    //     wer: "",
+    //     cer: "",
+    //     recordAudio: RecordState.START,
+    //   });
+    //   this.getSentence();
+    // }
   };
+
+  onRTMicClick = () =>{
+    //Connect to inferencing server
+    this.streamingClient.connect('https://meity-dev-asr.ulcacontrib.org/', 'en', function (action, id) {
+      // timerRef.current = setTimeout(() => {
+      //     if (streaming.isStreaming) handleStop();
+      //   }, 61000);
+        // setStreamingState("listen");
+        // this.setState({
+        //   recordAudio: RecordState.START,
+        //   audioUri: "",
+        //   predictedText: "",
+        // });
+      if (action === SocketStatus.CONNECTED) {
+          // Once connection is succesful, start streaming
+          this.streamingClient.startStreaming(function (transcript) {
+              // transcript will give you the text which can be used further
+              console.log('transcript:', transcript);
+          }, (e) => {
+              console.log("I got error", e);
+          })
+      } else if (action === SocketStatus.TERMINATED) {
+          // Socket is closed and punctuation can be done after it.
+      } else {
+          //unexpected failures action on connect.
+          console.log("Action", action, id);
+      }
+    })
+  }
 
   onStopClick = () => {
     this.setState({
@@ -402,7 +438,7 @@ class Mainform extends Component {
                         </Grid>
                         <Grid  style={{ marginTop: "4%", marginBottom: "1%", display: "flex", flexDirection: "column", alignItems: 'center' }} >
                             <>
-                            <Grid>
+                            <Grid style={this.state.predictedText ? {pointerEvents: "none", opacity: "0.4"} : {}}>
                                 {this.state.micOn && (
                                   <IconButton aria-label="Record Audio" onClick={this.onMicClick} 
                                     style={{ background: '#1ea46c', color: '#ffffff'}}> 
@@ -412,6 +448,12 @@ class Mainform extends Component {
                                 // style={{ display: "flex",  justifyContent: "center",  marginBottom: "2%",  cursor: 'pointer' }}
                                 // />
                                 )}
+                                {/* {this.state.micOn && this.state.modelID === 1 && (
+                                  <IconButton aria-label="Record Audio" onClick={this.onRTMicClick} 
+                                    style={{ background: '#1ea46c', color: '#ffffff'}}> 
+                                    <SettingsVoiceIcon style={{fontSize: '3.5rem'}} />
+                                  </IconButton>
+                                )} */}
                             </Grid>
                             <Grid style={{ display: "none" }}>
                                 <AudioReactRecorder
@@ -479,7 +521,7 @@ class Mainform extends Component {
                                 onChange={this.handleRating}
                                 />
 
-                                <Button id="back" variant="contained" size="large" color="primary" onClick={this.updateFeedback} >
+                                <Button id="back" variant="contained" size="large" color="primary" onClick={this.updateFeedback} disabled={this.state.rating === 0} >
                                 {" "}  Submit feedback
                                 </Button>
                             </Grid>
