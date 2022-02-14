@@ -42,17 +42,11 @@ const languages = [
     value: "hi",
     label: "Hindi",
   },
+  {
+    value: "ta",
+    label: "Tamil",
+  },
 ];
-const models = [
-    {
-        value: '1',
-        label: 'Vakyansh',
-    },
-    {
-      value: '2',
-      label: 'Indic',
-  }
-]
 
 class Mainform extends Component {
   constructor(props) {
@@ -61,7 +55,7 @@ class Mainform extends Component {
       lang: "en",
       rating: 0,
       micOn: true,
-      setModel: models[0].value,
+      setModel: "",
       modelID: "",
       setSentence: "",
       sessionID: uuidv1(),
@@ -78,8 +72,7 @@ class Mainform extends Component {
       timeOut: 3000,
       variant: "info",
     };
-
-    // this.streamingClient= new StreamingClient();
+    this.models = []
   }
 
   timer() {
@@ -127,7 +120,7 @@ class Mainform extends Component {
       rating: 0,
       currentCount: 20,
       loading: false,
-      setModel: models.length > 0 ? models[0].value: '',
+      setModel: this.models.length > 0 ? this.models[0].model_name : '',
     });
     this.getModel(event.target.value, "model");
     this.getSentence(event.target.value);
@@ -135,14 +128,18 @@ class Mainform extends Component {
 
   // for model selection
   handleModelChange = (event) => {
-    this.setState({
-      setModel: event.target.value,
-      rating: 0,
+    this.models.forEach(item => {
+      if(item.model_id === event.target.value) {
+        this.setState({
+          setModel: item.model_name,
+          modelID: item.model_id,
+          rating: 0,
+        });
+      }
     });
   };
 
   componentDidMount() {
-    // this.setState({ loading: true });
     this.getModel("en", "model");
     this.getSentence();
   }
@@ -157,10 +154,10 @@ class Mainform extends Component {
       .then(async (res) => {
         const resData = await res.json();
         if (type === "model") {
-          this.setState({ modelID: resData.model_ids[0], loading: false});
+          this.models = resData.model_info;
+          this.setState({ modelID: this.models[0].model_id, setModel: this.models[0].model_name, loading: false});
         } else {
           this.setState({
-            // setSentence: resData.generated_text,
             loading: false,
           });
         }
@@ -179,7 +176,6 @@ class Mainform extends Component {
     })
       .then(async (res) => {
         const resData = await res.json();
-        // console.log("resData ======", resData);
         this.setState({
             rating: 0,
             setSentence: resData.generated_text,
@@ -188,7 +184,6 @@ class Mainform extends Component {
             audioUri: '',
             predictedText: '',
         });
-        // this.getModel(lan, "model");
       })
       .catch((error) => {
         console.log("error", error);
@@ -418,14 +413,14 @@ class Mainform extends Component {
                               <TextField
                                 id="outlined-select-currency"
                                 select
-                                style={{ width: "96%", fontSize:'1.2em' }}
-                                value={this.state.setModel}
+                                style={{ width: "96%", fontSize:'1.2em', textTransform: 'capitalize' }}
+                                value={this.state.modelID}
                                 label="Select Model"
                                 onChange={this.handleModelChange}
                                 >
-                                {models.map((option) => (
-                                    <MenuItem key={option.value} value={option.value}>
-                                    {option.label}
+                                {this.models.map((option) => (
+                                    <MenuItem key={option.model_id} value={option.model_id} style={{ textTransform: 'capitalize' }}>
+                                    {option.model_name}
                                     </MenuItem>
                                 ))}
                                 </TextField>
