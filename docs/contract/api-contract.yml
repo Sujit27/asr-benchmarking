@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   version: 1.0.0
   title: OLA ASR Backend -API Contract
-  description: A python based microservice for OLA ASR backend management. This service will expose REST APIs to maintain ASR related functionalities.
+  description: A python based microservice for OLA ASR backend management. This service will expose REST APIs to maintain ASR related functionalities
   contact:
     name: Aswin Pradeep
     email: aswin.pradeep@tarento.com
@@ -13,7 +13,7 @@ paths:
     post:
       tags:
         - Generate a sentence
-      summary: REST API to generate a sentence from pre defined benchmark dataset, stored as json file.
+      summary: REST API to generate a sentence from pre defined benchmark dataset, stored as json file
       requestBody:
         content:
           application/json:
@@ -28,13 +28,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/SentenceStatus'
         '400':
-          description: On input errors causing failure.
+          description: On input errors 
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: On system level errors causing failure.
+          description: On system level errors
           content:
             '*/*':
               schema:
@@ -53,19 +53,19 @@ paths:
         required: true
       responses:
         '200':
-          description: User has verified successfully.
+          description: User has submitted feedback successfully
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Status'
         '400':
-          description: On input errors causing failure in user verification.
+          description: On input errors 
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: On system level errors causing failure in user verification.
+          description: On system level errors
           content:
             '*/*':
               schema:
@@ -76,7 +76,7 @@ paths:
     post:
       tags:
         - save model predictions
-      summary: save multiple model predictions for the same text.
+      summary: save multiple model predictions for the same text
       requestBody:
         content:
           application/json:
@@ -85,19 +85,19 @@ paths:
         required: true
       responses:
         '200':
-          description: apiKey search is successful.
+          description: Request Successfull
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Status'
         '400':
-          description: On input errors causing failure in auth token search.
+          description: On input errors 
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: On system level errors causing failure in auth token search.
+          description: On system level errors 
           content:
             '*/*':
               schema:
@@ -116,19 +116,19 @@ paths:
         required: true
       responses:
         '200':
-          description: apiKey search is successful.
+          description: search is successful.
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/Status'
+                $ref: '#/components/schemas/PredStatus'
         '400':
-          description: On input errors causing failure in auth token search.
+          description: On input errors
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: On system level errors causing failure in auth token search.
+          description: On system level errors
           content:
             '*/*':
               schema:
@@ -147,24 +147,54 @@ paths:
         required: true
       responses:
         '200':
-          description: apiKey search is successful.
+          description: Request Successfull
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/Status'
+                $ref: '#/components/schemas/PredStatus'
         '400':
-          description: On input errors causing failure in auth token search.
+          description: On input errors
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: On system level errors causing failure in auth token search.
+          description: On system level errors
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /v1/get_model_ids:
+    post:
+      tags:
+        - Get model details
+      summary: get all the modelID and Name for provided language
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/modelIdRequest'
+        required: true
+      responses:
+        '200':
+          description: Request Successfull
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Status'
+        '400':
+          description: On input errors
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: On system level errors
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
   
 components:
   schemas:
@@ -190,13 +220,28 @@ components:
       properties:
         feedbackScore:
           type: integer
-          description: value of submitted rating.
+          description: value of submitted rating
         sessionID:
           type: string
-          description: unique sessionid value.
+          description: unique sessionid value
         modelID:
           type: string
-          description: unique modelid value.
+          description: unique modelid value
+    
+    modelIdRequest:
+      type: object
+      required:
+        - language
+      properties:
+        feedbackScore:
+          type: integer
+          description: value of submitted rating
+        sessionID:
+          type: string
+          description: unique sessionid value
+        modelID:
+          type: string
+          description: unique modelid value
           
     exportRequest:
       type: object
@@ -215,16 +260,16 @@ components:
           description: two letter language code
         sessionID:
           type: string
-          description: unique sessionid value.
+          description: unique sessionid value
         modelID:
           type: string
-          description: unique modelid value.
+          description: unique modelid value
         audioUri:
           type: string
-          description: uri of saved audio file.
+          description: uri of saved audio file
         predictedText:
           type: string
-          description: predicted text from model output.
+          description: predicted text from model output
         inputText:
           type: string
           description: real string from benchmark dataset which user reads out
@@ -251,19 +296,23 @@ components:
           type: string
           format : byte
           description: base64 audio content
-        modelID:
-          type: string
-          description: unique modelid value.
+       
       
     SentenceStatus:
       type: object
       properties:
         generated_text:
           type: string
-          description: message returned after succesful request completion.
+          description: message returned after succesful request completion
           example : "This is a random generated sentence"
 
-          
+    PredStatus:
+      type: object
+      properties:
+        transcript:
+          type: string
+          description: prediction string returned after succesful request completion
+   
 
           
     Status:
@@ -271,10 +320,10 @@ components:
       properties:
         message:
           type: string
-          description: message returned after succesful request completion.
+          description: message returned after succesful request completion
         data:
           type: object
-          description: data returned by the request.
+          description: data returned by the request
 
           
     Error:
@@ -282,10 +331,10 @@ components:
       properties:
         errorID:
           type: string
-          description: Unique UUID for the error.
+          description: Unique UUID for the error
         code:
           type: string
-          description: Unique code signifying the category for the error.
+          description: Unique code signifying the category for the error
         message:
           type: string
           description: User readable message pertaining to the error
