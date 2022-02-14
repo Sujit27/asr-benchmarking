@@ -182,7 +182,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/Status'
+                $ref: '#/components/schemas/ModelStatus'
         '400':
           description: On input errors
           content:
@@ -233,15 +233,10 @@ components:
       required:
         - language
       properties:
-        feedbackScore:
-          type: integer
-          description: value of submitted rating
-        sessionID:
+        language:
           type: string
-          description: unique sessionid value
-        modelID:
-          type: string
-          description: unique modelid value
+          description: two letter language code
+
           
     exportRequest:
       type: object
@@ -305,6 +300,21 @@ components:
           type: string
           description: message returned after succesful request completion
           example : "This is a random generated sentence"
+
+
+    ModelStatus:
+      type: object
+      properties:
+        model_info:
+          type: array
+          items:
+            type: object
+            properties:
+              model_id:
+                type: integer
+              model_name:
+                type: string
+                
 
     PredStatus:
       type: object
