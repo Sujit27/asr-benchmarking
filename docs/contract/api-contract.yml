@@ -244,7 +244,7 @@ components:
         - language
         - sessionID
         - modelID
-        - audioUri
+        - audioContent
         - predictedText
         - inputText
         - wer
@@ -259,9 +259,10 @@ components:
         modelID:
           type: string
           description: unique modelid value
-        audioUri:
+        audioContent:
           type: string
-          description: uri of saved audio file
+          format : byte
+          description: base64 audio content
         predictedText:
           type: string
           description: predicted text from model output
