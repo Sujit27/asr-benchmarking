@@ -323,6 +323,10 @@ components:
         transcript:
           type: string
           description: prediction string returned after succesful request completion
+        prediction_time:
+          type: string
+          format: time
+          description: time taken for model prediction in milliseconds ( H:M:S:MS )
    
 
           
