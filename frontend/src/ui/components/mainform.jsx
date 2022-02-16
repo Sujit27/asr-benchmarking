@@ -155,7 +155,7 @@ class Mainform extends Component {
         const resData = await res.json();
         if (type === "model") {
           this.models = resData.model_info;
-          if (this.state.setModel !== '') {
+          if (this.state.setModel !== '' && this.state.modelID !== '') {
             this.setState({ loading: false});
           } else {
             this.setState({ modelID: this.models[0].model_id, setModel: this.models[0].model_name, loading: false});
