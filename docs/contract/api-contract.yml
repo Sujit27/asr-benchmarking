@@ -164,6 +164,38 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/Error'
+                
+                
+  /v1/get_ola_transcription:
+    post:
+      tags:
+        - Get model prediction
+      summary: get the predicted transcription for audio file
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/transcriptionRequest'
+        required: true
+      responses:
+        '200':
+          description: Request Successfull
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PredStatus'
+        '400':
+          description: On input errors
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: On system level errors
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /v1/get_model_ids:
     post:
