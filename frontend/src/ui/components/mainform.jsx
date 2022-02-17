@@ -258,6 +258,7 @@ class Mainform extends Component {
       this.state.sessionID,
       this.state.modelID,
       this.state.setModel,
+      this.state.audioUri,
       this.state.audioContent,
       this.state.predictedText,
       this.state.setSentence,
