@@ -1,7 +1,7 @@
 import API from "./api";
 import ENDPOINTS from "./apiendpoints";
 
-export default class FetchModel extends API {
+export default class FetchSentence extends API {
   constructor(language = 'en', timeout = 200000) {
     super("POST", timeout, false);
     this.fetch_model = null;

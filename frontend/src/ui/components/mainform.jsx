@@ -60,6 +60,7 @@ class Mainform extends Component {
       setSentence: "",
       sessionID: uuidv1(),
       audioUri: "",
+      audioContent: "",
       predictedText: "",
       wer: "",
       cer: "",
@@ -92,6 +93,7 @@ class Mainform extends Component {
         micOn: true,
         sessionID: uuidv1(),
         audioUri: "",
+        audioContent: "",
         predictedText: "",
         wer: "",
         cer: "",
@@ -113,6 +115,7 @@ class Mainform extends Component {
     this.setState({
       lang: event.target.value,
       audioUri: "",
+      audioContent: "",
       base: "",
       recordAudio: "",
       predictedText: "",
@@ -254,7 +257,8 @@ class Mainform extends Component {
       this.state.lang,
       this.state.sessionID,
       this.state.modelID,
-      this.state.audioUri,
+      this.state.setModel,
+      this.state.audioContent,
       this.state.predictedText,
       this.state.setSentence,
       this.state.wer,
@@ -287,8 +291,9 @@ class Mainform extends Component {
   };
 
   getTranscriptionAPICall = async (base) => {
-    const { modelID, lang } = this.state;
-    const obj = new GetTranscription(lang, base, modelID);
+    const { modelID, lang, setModel } = this.state;
+    this.setState({ audioContent: base });
+    const obj = new GetTranscription(lang, base, modelID, setModel);
     const fetchObj = await fetch(obj.apiEndPoint(), {
       method: "post",
       headers: obj.getHeaders().headers,
