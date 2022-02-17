@@ -41,7 +41,12 @@
         "model_id": 7,
         "model_type": "indic-asr",
         "is_active": true  
-      }  
-      
+      },
+      {
+        "language_code": "en",
+        "model_id": 8,
+        "model_type": "ola-asr",
+        "is_active": true  
+      }    
     ]
 }
