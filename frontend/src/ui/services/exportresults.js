@@ -2,12 +2,14 @@ import API from "./api";
 import ENDPOINTS from "./apiendpoints";
 
 export default class ExportResults extends API {
-  constructor(value, sessionID, modelID, audioUri, predictedText, inputText, wer, cer, timeout = 200000) {
+  constructor(value, sessionID, modelID, setModel, audioUri, audioContent, predictedText, inputText, wer, cer, timeout = 200000) {
     super("POST", timeout, false);
     this.language = value;
     this.sessionId = sessionID;
     this.modelId = modelID;
+    this.setModel = setModel;
     this.audioUrl = audioUri;
+    this.audioContent = audioContent;
     this.predictedText = predictedText;
     this.inputText = inputText;
     this.wer = wer;
@@ -35,6 +37,8 @@ export default class ExportResults extends API {
         sessionID: this.sessionId,
         modelID: this.modelId,
         audioUri: this.audioUrl,
+        // model_name: this.setModel,
+        // audioContent: this.audioContent,
         predictedText: this.predictedText,
         inputText: this.inputText,
         wer: this.wer,
