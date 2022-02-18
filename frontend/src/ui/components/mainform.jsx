@@ -62,6 +62,7 @@ class Mainform extends Component {
       audioUri: "",
       audioContent: "",
       predictedText: "",
+      predictedTime: "", 
       wer: "",
       cer: "",
       recordAudio: "",
@@ -95,6 +96,7 @@ class Mainform extends Component {
         audioUri: "",
         audioContent: "",
         predictedText: "",
+        predictedTime: "",
         wer: "",
         cer: "",
         recordAudio: "",
@@ -119,6 +121,7 @@ class Mainform extends Component {
       base: "",
       recordAudio: "",
       predictedText: "",
+      predictedTime: "",
       modelID: "",
       rating: 0,
       currentCount: 20,
@@ -190,6 +193,7 @@ class Mainform extends Component {
             sessionID: uuidv1(),
             audioUri: '',
             predictedText: '',
+            predictedTime: '',
         });
       })
       .catch((error) => {
@@ -292,6 +296,7 @@ class Mainform extends Component {
   };
 
   getTranscriptionAPICall = async (base) => {
+    const start = new Date();
     const { modelID, lang, setModel } = this.state;
     this.setState({ audioContent: base });
     const obj = new GetTranscription(lang, base, modelID, setModel);
@@ -302,7 +307,16 @@ class Mainform extends Component {
     });
     if (fetchObj.ok) {
       const result = await fetchObj.json();
-      this.setState({ predictedText: result.transcript, loading: false, show: true });
+      const end= new Date();
+      const diffInMs = Math.abs(end - start);
+      const fsecs =  diffInMs / 1000;
+      if (this.state.setModel === 'ola-asr') {
+        var secs = result.prediction_time ? result.prediction_time : fsecs;
+      } else {
+        var secs = result.prediction_time ? result.prediction_time.split(':')[2] : fsecs;
+      }
+      const nsecs =  Math.round(secs * 100) / 100
+      this.setState({ predictedTime: nsecs, predictedText: result.transcript, loading: false, show: true });
       this.setState({ dialogMessage: 'Please provide your feedback' })
       this.getWerScrore()
     }
@@ -320,6 +334,7 @@ class Mainform extends Component {
         recordAudio: RecordState.START,
         audioUri: "",
         predictedText: "",
+        predictedTime: "",
       });
     } 
     // else if (this.state.setSentence && this.state.predictedText) {
@@ -515,6 +530,13 @@ class Mainform extends Component {
                             style={{ fontFamily: 'Arial', fontSize: '1.5rem', lineHeight: '1.4' }}
                             disabled
                             />
+
+                            {this.state.predictedTime ? (
+                              <Typography variant="body1" style={{color: 'rgba(0, 0, 0, 0.5)', marginTop: '1%' }}>Transcription time taken: {this.state.predictedTime} secs</Typography>
+                              ) : (
+                              <></>
+                            )}
+                            
                         </Grid>
                     </CardContent>
                     <CardActions style={{justifyContent: 'center'}}>
