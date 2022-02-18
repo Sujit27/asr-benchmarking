@@ -127,8 +127,8 @@ def export_results():
     db.save_model_predictions.insert_one(record) # here save model predictions is the collection name which is located inside  specified  database 
     content={ "sessionID" :body["sessionID"] , "audioContent":body["audioContent"]}
     db.audio_content.insert_one(content) 
-    model_thread = threading.Thread(target=get_all_model_predictions , args = (body,))
-    model_thread.start()
+    #model_thread = threading.Thread(target=get_all_model_predictions , args = (body,))
+    #model_thread.start()
     print('after all model prediction function ...')
     dict_={}
     dict_['message']='*************Success**********************'
