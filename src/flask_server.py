@@ -146,6 +146,16 @@ def show_all_exported_results():
     #return flask.jsonify(json.loads(json_util.dumps(all_records)))
     #return flask.jsonify([todo for todo in todos])
 
+@app.route("/show_all_audioContent",methods=['GET'])
+@cross_origin(origin='*',headers=['Content-Type','Authorization'])
+def show_all_audioContent():
+    all_records = db.audio_content.find()  # here save model predictions is the collection name which is located inside  specified  database 
+    csv_file = pd.DataFrame(all_records)
+    response_stream = BytesIO(csv_file.to_csv().encode())
+    return send_file(response_stream , mimetype="text/csv", attachment_filename="audio_content.csv")
+
+
+
 
 @app.route("/get_model_ids",methods=['POST'])
 @cross_origin(origin='*',headers=['Content-Type','Authorization'])
