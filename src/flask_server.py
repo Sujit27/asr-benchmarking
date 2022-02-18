@@ -2,7 +2,6 @@ from flask_pymongo import PyMongo
 from pymongo.errors import BulkWriteError
 from flask import Flask, json, request , redirect ,url_for ,send_file
 from bson import json_util
-from sympy import content
 import get_random_text
 import flask
 import config
