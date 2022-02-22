@@ -42,7 +42,7 @@ def get_all_model_predictions(body):
     base_64 = body["audioContent"]
     modelID = body["modelID"]
 
-    API_ENDPOINT = "http://speech-one.eastus.cloudapp.azure.com:5001/get_model_ids"
+    API_ENDPOINT = "http://localhost:5001/get_model_ids"
     data = { "language":lang }
     headers_ = {
         'Content-Type': "application/json",
@@ -65,11 +65,11 @@ def get_all_model_predictions(body):
 
     for model_ in range(len(lang_supported_models)):
         if lang_supported_models[model_] == 'vakyansh' and (lang_modelIds[model_]  != modelID) :
-            API_ENDPOINT1 = "http://speech-one.eastus.cloudapp.azure.com:5000/get_transcription"
+            API_ENDPOINT1 = "http://localhost:5000/get_transcription"
         elif lang_supported_models[model_]== 'indic-asr' and (lang_modelIds[model_] != modelID):
-            API_ENDPOINT1 = "http://speech-one.eastus.cloudapp.azure.com:8080/infer_indic_speech"
+            API_ENDPOINT1 = "http://localhost:8080/infer_indic_speech"
         elif lang_supported_models[model_]== 'ola-asr' and (lang_modelIds[model_] != modelID):
-            API_ENDPOINT1 = "http://speech-one.eastus.cloudapp.azure.com:8081/decode"
+            API_ENDPOINT1 = "http://localhost:8081/decode"
         else:
             continue
 
