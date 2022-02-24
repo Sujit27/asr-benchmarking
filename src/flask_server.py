@@ -131,11 +131,14 @@ def show_all_feedbacks():
 def export_results():
     body = request.get_json()
     record = { "language": body["language"] , "sessionID" :body["sessionID"] ,"model_name":body["model_name"],"modelID" : body["modelID"] ,"predictedText":body["predictedText"],"inputText":body["inputText"],"wer":body["wer"],"cer":body["cer"]}
-    db.save_model_predictions.insert_one(record) ## here save model predictions is the collection name which is located inside  specified  database 
-    content={ "sessionID" :body["sessionID"] , "audioContent":body["audioContent"]}
-    db.audio_content.insert_one(content) 
-    model_thread = threading.Thread(target=get_all_model_predictions , args = (body,))
-    model_thread.start()
+    if len(body["predictedText"]) > 1:
+        db.save_model_predictions.insert_one(record) ## here save model predictions is the collection name which is located inside  specified  database 
+        content={ "sessionID" :body["sessionID"] , "audioContent":body["audioContent"]}
+        db.audio_content.insert_one(content) 
+        model_thread = threading.Thread(target=get_all_model_predictions , args = (body,))
+        model_thread.start()
+    else:
+        print('empty string predicted')
     print('after all model prediction function ...')
     dict_={}
     dict_['message']='*************Success**********************'
