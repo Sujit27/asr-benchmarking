@@ -22,6 +22,17 @@ uri_=config.MONGO_DB_SERVER_ADDRESS+config.db_name
 mongodb_client = PyMongo(app, uri=uri_) 
 db = mongodb_client.db
 
+
+def store_model_prediction(record):
+    db.save_model_predictions.insert_one(record) # here save model predictions is the collection name which is located inside  specified  database 
+def store_audio_content(content):
+    db.audio_content.insert_one(content) 
+def store_feedback(record):
+    db.feedback_collection.insert_one(record) # here feedback_collection  is the collection name which is located inside  specified  database 
+
+
+
+
 def get_transcription_and_store(API_ENDPOINT1,data1,headers_,body,modelName,model_id):
     r1 = requests.post(API_ENDPOINT1, data = json.dumps(data1),verify = False ,headers = headers_)
     print(r1)
@@ -109,14 +120,15 @@ def get_sentence():
 def submit_feedback():
     body = request.get_json()
     record = { "feedbackScore": body["feedbackScore"] , "sessionID" :body["sessionID"] ,"modelID" : body["modelID"] }
-    db.feedback_collection.insert_one(record) # here feedback_collection  is the collection name which is located inside  specified  database 
-    dict_={}
-    dict_['message']='******************Thank You ******************'
-    dict_['data']=record
+    thread3 = threading.Thread(target=store_feedback,args = (record,))
+    thread3.start()
+    dict_ = {}
+    dict_['message'] = '******************Thank You ******************'
+    dict_['data'] = record
     return flask.jsonify(json.loads(json_util.dumps(dict_)))
 
 @app.route("/show_all_feedbacks",methods=['GET'])
-@cross_origin(origin='*',headers=['Content-Type','Authorization'])
+@cross_origin(origin = '*',headers = ['Content-Type','Authorization'])
 def show_all_feedbacks():
     all_records = db.feedback_collection.find()   # here feedback_collection is the collection name which is located inside  specified  database 
     csv_file = pd.DataFrame(all_records)
@@ -131,9 +143,11 @@ def show_all_feedbacks():
 def export_results():
     body = request.get_json()
     record = { "language": body["language"] , "sessionID" :body["sessionID"] ,"model_name":body["model_name"],"modelID" : body["modelID"] ,"predictedText":body["predictedText"],"inputText":body["inputText"],"wer":body["wer"],"cer":body["cer"]}
-    db.save_model_predictions.insert_one(record) # here save model predictions is the collection name which is located inside  specified  database 
-    content={ "sessionID" :body["sessionID"] , "audioContent":body["audioContent"]}
-    db.audio_content.insert_one(content) 
+    thread1 = threading.Thread(target=store_model_prediction , args = (record,))
+    thread1.start()
+    content = { "sessionID" :body["sessionID"] , "audioContent":body["audioContent"]}
+    thread2 = threading.Thread(target= store_audio_content , args = (content,))
+    thread2.start()
     model_thread = threading.Thread(target=get_all_model_predictions , args = (body,))
     model_thread.start()
     print('after all model prediction function ...')
