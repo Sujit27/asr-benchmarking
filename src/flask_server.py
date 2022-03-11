@@ -130,13 +130,17 @@ def show_all_feedbacks():
 @cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def export_results():
     body = request.get_json()
-    record = { "language": body["language"] , "sessionID" :body["sessionID"] ,"model_name":body["model_name"],"modelID" : body["modelID"] ,"predictedText":body["predictedText"],"inputText":body["inputText"],"wer":body["wer"],"cer":body["cer"]}
+    record = { "language": body["language"] , "sessionID" :body["sessionID"] ,"model_name":body["model_name"],"modelID" : body["modelID"] ,"predictedText":body["predictedText"],"inputText":body["inputText"],"wer":body["wer"],"cer":body["cer"], "real_time_inf": body["real_time_inf"]}
     if len(body["predictedText"]) > 1:
-        db.save_model_predictions.insert_one(record) ## here save model predictions is the collection name which is located inside  specified  database 
-        content={ "sessionID" :body["sessionID"] , "audioContent":body["audioContent"]}
-        db.audio_content.insert_one(content) 
-        model_thread = threading.Thread(target=get_all_model_predictions , args = (body,))
-        model_thread.start()
+        if body["real_time_inf"] == False:
+            print("**Non-Realtime flow in execution**")
+            db.save_model_predictions.insert_one(record) ## here save model predictions is the collection name which is located inside  specified  database 
+            content={ "sessionID" :body["sessionID"] , "audioContent":body["audioContent"]}
+            db.audio_content.insert_one(content) 
+            model_thread = threading.Thread(target=get_all_model_predictions , args = (body,))
+            model_thread.start()
+        else:
+            print("** Real-time inference is happening **")
     else:
         print('empty string predicted')
     print('after all model prediction function ...')
