@@ -1,39 +1,17 @@
-from flask_pymongo import PyMongo
-from pymongo.errors import BulkWriteError
-from flask import Flask, json, request , redirect ,url_for ,send_file
-from bson import json_util
-import get_random_text
-import flask
-import config
-from flask_cors import CORS, cross_origin
-import get_scores
-import requests
-import json
-import threading
-import pandas as pd
-from io import BytesIO
+from flask_pymongo import PyMongo from pymongo.errors import BulkWriteError from flask import Flask, json, request , redirect ,url_for ,send_file from bson import json_util import 
+get_random_text import flask import config from flask_cors import CORS, cross_origin import get_scores import requests import json import threading import pandas as pd from io import BytesIO 
 import time
 
-app = flask.Flask(__name__)
-CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+app = flask.Flask(__name__) CORS(app) app.config['CORS_HEADERS'] = 'Content-Type'
 
-uri_=config.MONGO_DB_SERVER_ADDRESS+config.db_name
-mongodb_client = PyMongo(app, uri=uri_) 
-db = mongodb_client.db
+uri_=config.MONGO_DB_SERVER_ADDRESS+config.db_name mongodb_client = PyMongo(app, uri=uri_) db = mongodb_client.db
 
-def get_transcription_and_store(API_ENDPOINT1,data1,headers_,body,modelName,model_id):
-    r1 = requests.post(API_ENDPOINT1, data = json.dumps(data1),verify = False ,headers = headers_)
-    print(r1)
-    result1 = r1.json()['transcript']
-    print(f"*****************{modelName}  prediction ************")
-    print(result1)
+def get_transcription_and_store(API_ENDPOINT1,data1,headers_,body,modelName,model_id): r1 = requests.post(API_ENDPOINT1, data = json.dumps(data1),verify = False ,headers = headers_) print(r1) 
+    result1 = r1.json()['transcript'] print(f"*****************{modelName} prediction ************") print(result1)
     
-    cer_score = get_scores.get_cer( result1,body["inputText"])
-    wer_score = get_scores.get_wer( result1,body["inputText"])
-    record = { "language": body["language"] , "sessionID" :body["sessionID"] ,"model_name":modelName,"modelID" : model_id,"predictedText":result1,"inputText":body["inputText"],"wer": wer_score , "cer" : cer_score ,"real_time_inf":False}
-    db.save_model_predictions.insert_one(record)
-    return f"{modelName} transcription completed "
+    cer_score = get_scores.get_cer( result1,body["inputText"]) wer_score = get_scores.get_wer( result1,body["inputText"]) record = { "language": body["language"] , "sessionID" :body["sessionID"] 
+    ,"model_name":modelName,"modelID" : model_id,"predictedText":result1,"inputText":body["inputText"],"wer": wer_score , "cer" : cer_score} db.save_model_predictions.insert_one(record) return 
+    f"{modelName} transcription completed "
 
 
 def get_all_model_predictions(body):
@@ -132,17 +110,18 @@ def export_results():
     body = request.get_json()
     record = { "language": body["language"] , "sessionID" :body["sessionID"] ,"model_name":body["model_name"],"modelID" : body["modelID"] ,"predictedText":body["predictedText"],"inputText":body["inputText"],"wer":body["wer"],"cer":body["cer"], "real_time_inf": body["real_time_inf"]}
     if len(body["predictedText"]) > 1:
-        #if body["real_time_inf"] == False:
-        #print("**Non-Realtime flow in execution**")
-        db.save_model_predictions.insert_one(record) ## here save model predictions is the collection name which is located inside  specified  database 
-        content={ "sessionID" :body["sessionID"] , "audioContent":body["audioContent"]}
-        db.audio_content.insert_one(content) 
-        model_thread = threading.Thread(target=get_all_model_predictions , args = (body,))
-        model_thread.start()
-        # else:
-        #     print("** Real-time inference is happening **")
+        if body["real_time_inf"] == False:
+            print("**Non-Realtime flow in execution**")
+            db.save_model_predictions.insert_one(record) ## here save model predictions is the collection name which is located inside  specified  database 
+            content={ "sessionID" :body["sessionID"] , "audioContent":body["audioContent"]}
+            db.audio_content.insert_one(content) 
+            model_thread = threading.Thread(target=get_all_model_predictions , args = (body,))
+            model_thread.start()
+        else:
+            print("** Real-time inference is happening **")
     else:
         print('empty string predicted')
+    print('after all model prediction function ...')
     dict_={}
     dict_['message']='*************Success**********************'
     dict_['data']=record
